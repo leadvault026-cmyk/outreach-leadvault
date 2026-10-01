@@ -1,5 +1,6 @@
 import path from "node:path";
 import { PGlite } from "@electric-sql/pglite";
+import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { sql } from "drizzle-orm";
 import { drizzle, type PgliteDatabase } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
@@ -26,7 +27,7 @@ const SUPABASE_SHIM = `
 export type TestDb = PgliteDatabase<typeof schema>;
 
 export async function createTestDatabase(): Promise<{ db: TestDb; client: PGlite }> {
-  const client = new PGlite();
+  const client = new PGlite({ extensions: { pg_trgm } });
   await client.exec(SUPABASE_SHIM);
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: path.resolve(__dirname, "../../src/db/migrations") });

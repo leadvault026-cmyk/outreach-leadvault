@@ -75,10 +75,22 @@ export const prospects = appSchema.table(
     firstImportId: uuid("first_import_id"),
     lastImportId: uuid("last_import_id"),
     archivedAt: timestamptz("archived_at"),
+    /**
+     * Lower-cased search document maintained by PostgreSQL (generated column) and indexed with
+     * pg_trgm, so substring search over the main research fields uses one GIN index.
+     */
+    searchText: text("search_text").generatedAlwaysAs(
+      sql`lower(coalesce(company_name, '') || ' ' || coalesce(contact_name, '') || ' ' || coalesce(contact_title, '') || ' ' || coalesce(email_normalized, '') || ' ' || coalesce(website_domain, '') || ' ' || coalesce(city, '') || ' ' || coalesce(state, '') || ' ' || coalesce(business_type, ''))`,
+    ),
     ...timestamps,
   },
   (t) => [
     unique("prospects_workspace_id_id_key").on(t.workspaceId, t.id),
+    index("prospects_search_trgm_idx").using("gin", sql`${t.searchText} extensions.gin_trgm_ops`),
+    index("prospects_ws_verification_idx").on(t.workspaceId, t.emailVerificationStatus),
+    index("prospects_ws_updated_idx").on(t.workspaceId, t.updatedAt.desc()),
+    index("prospects_ws_company_idx").on(t.workspaceId, t.companyName),
+    index("prospects_ws_last_import_idx").on(t.workspaceId, t.lastImportId),
     uniqueIndex("prospects_ws_email_uq")
       .on(t.workspaceId, t.emailNormalized)
       .where(sql`${t.emailNormalized} is not null`),
@@ -131,6 +143,11 @@ export const prospectOutreachState = appSchema.table(
       .notNull()
       .default(sql`'{}'::text[]`),
     eligibilityCheckedAt: timestamptz("eligibility_checked_at").notNull(),
+    /**
+     * When this cached decision can change with time alone (e.g. a verification result turning
+     * STALE). Rows past this instant are re-evaluated by the eligibility service before use.
+     */
+    eligibilityExpiresAt: timestamptz("eligibility_expires_at"),
     reviewDecision: text("review_decision", { enum: ["approved", "rejected"] }),
     reviewDecidedBy: uuid("review_decided_by"),
     reviewDecidedAt: timestamptz("review_decided_at"),
@@ -147,6 +164,7 @@ export const prospectOutreachState = appSchema.table(
       foreignColumns: [prospects.workspaceId, prospects.id],
     }).onDelete("cascade"),
     index("prospect_outreach_state_ws_eligibility_idx").on(t.workspaceId, t.eligibility),
+    index("prospect_outreach_state_ws_expires_idx").on(t.workspaceId, t.eligibilityExpiresAt),
     check("prospect_outreach_state_eligibility_check", inList(t.eligibility, ELIGIBILITY_STATUSES)),
     check(
       "prospect_outreach_state_review_check",
@@ -186,7 +204,11 @@ export const prospectImports = appSchema.table(
     createdBy: uuid("created_by").notNull(),
     sourceLabel: text("source_label"),
     fileName: text("file_name").notNull(),
-    storagePath: text("storage_path").notNull(),
+    /**
+     * Null in Phase 2: the verbatim cells of every row are persisted in prospect_import_rows.raw
+     * (private, under RLS). Object storage arrives with worker-based processing (Phase 5).
+     */
+    storagePath: text("storage_path"),
     fileSha256: text("file_sha256").notNull(),
     /** Country applied to rows without one (recorded on the import, §10). */
     defaultCountryCode: char("default_country_code", { length: 2 }),
@@ -201,7 +223,10 @@ export const prospectImports = appSchema.table(
     invalidCount: integer("invalid_count").notNull().default(0),
     suppressedCount: integer("suppressed_count").notNull().default(0),
     duplicateCount: integer("duplicate_count").notNull().default(0),
+    reviewCount: integer("review_count").notNull().default(0),
+    errorCount: integer("error_count").notNull().default(0),
     errorCode: text("error_code"),
+    startedAt: timestamptz("started_at"),
     completedAt: timestamptz("completed_at"),
     ...timestamps,
   },
@@ -225,11 +250,27 @@ export const prospectImportRows = appSchema.table(
     workspaceId: uuid("workspace_id").notNull(),
     raw: jsonb("raw").$type<Record<string, string>>().notNull(),
     mapped: jsonb("mapped").$type<Record<string, unknown>>(),
+    /** Final, committed outcome ('pending' until the import runs). */
     outcome: text("outcome", { enum: IMPORT_ROW_OUTCOMES }).notNull(),
+    /** Outcome predicted by the validate-and-preview step. */
+    plannedOutcome: text("planned_outcome", { enum: IMPORT_ROW_OUTCOMES }),
     issues: jsonb("issues")
-      .$type<Array<{ code: string; field?: string; severity: string; message: string }>>()
+      .$type<
+        Array<{
+          code: string;
+          field?: string;
+          severity: "error" | "warning" | "info";
+          message: string;
+        }>
+      >()
       .notNull()
       .default([]),
+    /** Eligibility of the resulting prospect at preview/import time (authoritative engine). */
+    eligibility: text("eligibility", { enum: ELIGIBILITY_STATUSES }),
+    eligibilityReasons: text("eligibility_reasons")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     prospectId: uuid("prospect_id"),
     overriddenBy: uuid("overridden_by"),
   },
@@ -246,7 +287,17 @@ export const prospectImportRows = appSchema.table(
       foreignColumns: [prospects.workspaceId, prospects.id],
     }),
     index("prospect_import_rows_outcome_idx").on(t.importId, t.outcome),
+    index("prospect_import_rows_planned_idx").on(t.importId, t.plannedOutcome),
+    index("prospect_import_rows_prospect_idx").on(t.prospectId),
     check("prospect_import_rows_outcome_check", inList(t.outcome, IMPORT_ROW_OUTCOMES)),
+    check(
+      "prospect_import_rows_planned_check",
+      sql`${t.plannedOutcome} is null or ${inList(t.plannedOutcome, IMPORT_ROW_OUTCOMES)}`,
+    ),
+    check(
+      "prospect_import_rows_eligibility_check",
+      sql`${t.eligibility} is null or ${inList(t.eligibility, ELIGIBILITY_STATUSES)}`,
+    ),
     check("prospect_import_rows_row_number_check", sql`${t.rowNumber} >= 1`),
   ],
 );

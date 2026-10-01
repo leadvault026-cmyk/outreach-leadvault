@@ -105,23 +105,6 @@ export function effectiveVerificationStatus(
   return ageDays > maxAgeDays ? "STALE" : record.status;
 }
 
-/** Eligibility contribution (architecture §10 reason codes). */
-export function verificationEligibility(status: EmailVerificationStatus): {
-  outcome: "ok" | "review" | "ineligible";
-  reason?: string;
-} {
-  switch (status) {
-    case "VERIFIED":
-      return { outcome: "ok" };
-    case "INVALID":
-      return { outcome: "ineligible", reason: "EMAIL_VERIFICATION_FAILED" };
-    case "RISKY":
-    case "STALE":
-    case "UNKNOWN":
-      return { outcome: "review", reason: "EMAIL_UNVERIFIED" };
-  }
-}
-
 /**
  * Contract for a future re-verification provider. No vendor is selected (owner decision §30-2a);
  * implementations must map vendor results through normalizeVerificationLabel().

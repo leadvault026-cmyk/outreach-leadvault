@@ -3,7 +3,6 @@ import {
   buildVerificationRecord,
   effectiveVerificationStatus,
   normalizeVerificationLabel,
-  verificationEligibility,
 } from "@/domain/verification";
 
 const NOW = new Date("2026-10-01T12:00:00Z");
@@ -101,18 +100,5 @@ describe("effectiveVerificationStatus", () => {
     expect(
       effectiveVerificationStatus({ status: "VERIFIED", verifiedAt: null }, { now: NOW }),
     ).toBe("UNKNOWN");
-  });
-});
-
-describe("verificationEligibility", () => {
-  it("only VERIFIED is ok; INVALID is ineligible; others need review", () => {
-    expect(verificationEligibility("VERIFIED")).toEqual({ outcome: "ok" });
-    expect(verificationEligibility("INVALID")).toEqual({
-      outcome: "ineligible",
-      reason: "EMAIL_VERIFICATION_FAILED",
-    });
-    for (const s of ["RISKY", "STALE", "UNKNOWN"] as const) {
-      expect(verificationEligibility(s)).toEqual({ outcome: "review", reason: "EMAIL_UNVERIFIED" });
-    }
   });
 });

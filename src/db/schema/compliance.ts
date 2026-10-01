@@ -99,6 +99,7 @@ export const unsubscribes = appSchema.table(
   (t) => [
     unique("unsubscribes_message_method_key").on(t.messageId, t.method),
     index("unsubscribes_ws_occurred_idx").on(t.workspaceId, t.occurredAt.desc()),
+    index("unsubscribes_ws_email_idx").on(t.workspaceId, t.emailNormalized),
     check("unsubscribes_method_check", inList(t.method, UNSUBSCRIBE_METHODS)),
   ],
 );

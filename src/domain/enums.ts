@@ -36,9 +36,11 @@ export const IMPORT_STATUSES = [
   "ready",
   "importing",
   "completed",
+  "completed_with_issues",
   "failed",
   "cancelled",
 ] as const;
+export type ImportStatus = (typeof IMPORT_STATUSES)[number];
 
 export const IMPORT_ROW_OUTCOMES = [
   "pending",
@@ -50,7 +52,9 @@ export const IMPORT_ROW_OUTCOMES = [
   "invalid",
   "suppressed",
   "skipped",
+  "error",
 ] as const;
+export type ImportRowOutcome = (typeof IMPORT_ROW_OUTCOMES)[number];
 
 export const AUDIENCE_MEMBER_SOURCES = ["manual", "import", "filter"] as const;
 export const CUSTOM_FIELD_TYPES = ["text", "number", "date", "url"] as const;
