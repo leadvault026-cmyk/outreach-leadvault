@@ -364,6 +364,17 @@ describe("row planning", () => {
     ).toMatchObject({ outcome: "duplicate_existing" });
   });
 
+  it("ignores case-only email and cosmetic website differences", () => {
+    const incoming = buildCandidate(row(), mapping, settings, [], NOW).candidate!;
+    const existing: ExistingProspect = {
+      ...incoming,
+      id: "p1",
+      email: "JANE@ACME.EXAMPLE",
+      website: "https://acme.example/",
+    };
+    expect(mergeIntoExisting(existing, incoming).changed).toEqual([]);
+  });
+
   it("only replaces verification with a recognized, newer result", () => {
     const incoming = buildCandidate(
       row({ Verified: "2026-06-01" }),

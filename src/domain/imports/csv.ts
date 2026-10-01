@@ -46,7 +46,7 @@ export type ParsedCsv = {
 export function sanitizeFileName(name: string): string {
   const base = (name.split(/[\\/]/).pop() ?? "upload.csv")
     .normalize("NFKC")
-     
+
     .replace(/[\u0000-\u001f\u007f<>:"|?*]/g, "")
     .replace(/\s+/g, " ")
     .trim()
@@ -100,14 +100,12 @@ export function decodeCsvBytes(
 }
 
 function cleanHeader(h: string): string {
-  return (
-    h
-       
-      .replace(/[\u0000-\u001f\u007f]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, CSV_LIMITS.maxHeaderLength)
-  );
+  return h
+
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, CSV_LIMITS.maxHeaderLength);
 }
 
 export function parseCsvText(

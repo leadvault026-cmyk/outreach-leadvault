@@ -388,7 +388,14 @@ export function mergeIntoExisting(
 ): { result: Candidate; changed: string[] } {
   const result: Candidate = { ...existing };
   const changed: string[] = [];
+  // Cosmetic-only differences are not changes: same normalized email, or same website domain.
+  const sameEmail =
+    incoming.emailNormalized !== null && incoming.emailNormalized === existing.emailNormalized;
+  const sameSite =
+    incoming.websiteDomain !== null && incoming.websiteDomain === existing.websiteDomain;
   for (const f of RESEARCH_FIELDS) {
+    if (sameEmail && f === "email") continue;
+    if (sameSite && f === "website") continue;
     const v = incoming[f];
     if (v !== null && v !== undefined && !sameValue(v, existing[f])) {
       (result as Record<string, unknown>)[f] = v;
