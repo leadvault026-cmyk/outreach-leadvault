@@ -18,5 +18,10 @@ export const getMyProfile = cache(async () => {
       .where(eq(profiles.userId, user.userId))
       .limit(1),
   );
-  return { ...user, fullName: rows[0]?.fullName ?? null, createdAt: rows[0]?.createdAt ?? null };
+  return {
+    ...user,
+    fullName: rows[0]?.fullName ?? null,
+    createdAt: rows[0]?.createdAt ?? null,
+    isPlatformAdmin: rows[0]?.isPlatformAdmin ?? false,
+  };
 });

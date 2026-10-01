@@ -16,6 +16,7 @@ export const CAPABILITIES = {
   "inbox.classify": "OPERATOR",
   "suppression.add": "OPERATOR",
   "suppression.lift": "ADMIN",
+  "customFields.manage": "ADMIN",
   "mailboxes.manage": "ADMIN",
   "compliance.manage": "ADMIN",
   "team.manage": "ADMIN",
@@ -36,6 +37,14 @@ export function hasRoleAtLeast(role: WorkspaceRole, minimum: WorkspaceRole): boo
 export function can(role: WorkspaceRole | null | undefined, capability: Capability): boolean {
   if (!role) return false;
   return hasRoleAtLeast(role, CAPABILITIES[capability]);
+}
+
+/**
+ * LeadVault-wide (global) suppression is not a workspace role: only platform administrators may
+ * create or lift it, and the database refuses global writes from user sessions entirely.
+ */
+export function canManageGlobalSuppression(profile: { isPlatformAdmin: boolean } | null): boolean {
+  return Boolean(profile?.isPlatformAdmin);
 }
 
 /** Team management: ADMINs manage members but may not grant, change or remove OWNER. */

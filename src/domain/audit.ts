@@ -8,6 +8,16 @@ export const AUDIT_ACTIONS = {
   signedOut: "auth.signed_out",
   passwordChanged: "auth.password_changed",
   workspaceAccessDenied: "workspace.access_denied",
+  importCreated: "import.created",
+  importCompleted: "import.completed",
+  importFailed: "import.failed",
+  importCancelled: "import.cancelled",
+  suppressionCreated: "suppression.created",
+  suppressionLifted: "suppression.lifted",
+  audienceCreated: "audience.created",
+  audienceUpdated: "audience.updated",
+  audienceMembersAdded: "audience.members_added",
+  audienceMembersRemoved: "audience.members_removed",
 } as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
 
@@ -57,4 +67,14 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "auth.signed_out": "Signed out",
   "auth.password_changed": "Changed password",
   "workspace.access_denied": "Workspace access denied",
+  "import.created": "Import uploaded",
+  "import.completed": "Import completed",
+  "import.failed": "Import failed",
+  "import.cancelled": "Import cancelled",
+  "suppression.created": "Suppression added",
+  "suppression.lifted": "Suppression lifted",
+  "audience.created": "Audience created",
+  "audience.updated": "Audience updated",
+  "audience.members_added": "Audience members added",
+  "audience.members_removed": "Audience members removed",
 };

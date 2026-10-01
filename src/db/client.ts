@@ -44,3 +44,14 @@ export function withUserContext<T>(
 export function privilegedDb(): Db {
   return db();
 }
+
+/** The privileged connection typed for the shared services layer (src/services). */
+export function systemDb(): AppDatabase {
+  return db() as unknown as AppDatabase;
+}
+
+/** Transaction runner as the signed-in user (RLS), for multi-transaction services. */
+export function userTxRunner(userId: string) {
+  return <T>(fn: (tx: AppDatabase) => Promise<T>) =>
+    withUserContext(userId, (tx) => fn(tx as unknown as AppDatabase));
+}

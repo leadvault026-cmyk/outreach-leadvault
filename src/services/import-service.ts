@@ -694,7 +694,8 @@ export async function validateImport(
   db: AppDatabase,
   actor: Actor,
   importId: string,
-  settingsInput: ImportSettingsInput,
+  /** Validated here with importSettingsSchema (callers may pass raw input). */
+  settingsInput: unknown,
   now = new Date(),
 ): Promise<PlanSummary> {
   const imp = await getImport(db, actor.workspaceId, importId);
