@@ -17,6 +17,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:seed:synthetic": "tsx scripts/seed-synthetic.ts",
+    "perf:prospects": "tsx scripts/perf-prospects.ts",
     "db:check": "drizzle-kit check",
     "db:studio": "drizzle-kit studio",
     "supabase:start": "npx supabase start",

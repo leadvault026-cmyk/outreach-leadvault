@@ -6,6 +6,10 @@ const WIDTHS = [320, 375, 768, 1024, 1280, 1440];
 const PAGES = [
   "dashboard",
   "prospects",
+  "audiences",
+  "imports",
+  "imports/new",
+  "suppression",
   "campaigns",
   "settings",
   "settings/team",
@@ -80,6 +84,11 @@ test.describe("accessibility (axe: WCAG 2.1 A/AA)", () => {
     for (const p of [
       "dashboard",
       "prospects",
+      "prospects?eligibility=NEEDS_REVIEW",
+      "audiences",
+      "imports",
+      "imports/new",
+      "suppression",
       "settings",
       "settings/team",
       "settings/compliance",
@@ -92,6 +101,29 @@ test.describe("accessibility (axe: WCAG 2.1 A/AA)", () => {
         expect(summarize(result.violations)).toEqual([]);
       });
     }
+
+    test("detail pages (prospect, audience, import)", async ({ page }) => {
+      for (const [list, pattern] of [
+        ["prospects", /\/prospects\/[0-9a-f-]{36}$/],
+        ["audiences", /\/audiences\/[0-9a-f-]{36}$/],
+        ["imports", /\/imports\/[0-9a-f-]{36}$/],
+      ] as const) {
+        await page.goto(`/w/${DEMO_WS}/${list}`);
+        const href = await page
+          .locator(`main a[href^="/w/${DEMO_WS}/${list}/"]:not([href$="/new"])`)
+          .first()
+          .getAttribute("href");
+        expect(href, list).toMatch(pattern);
+        for (const width of [375, 1280]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto(href!);
+          await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+          expect(await horizontalOverflow(page), `${href} @ ${width}px`).toBeLessThanOrEqual(0);
+          const result = await scan(page);
+          expect(summarize(result.violations), `${href} @ ${width}px`).toEqual([]);
+        }
+      }
+    });
 
     test("mobile drawer", async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });

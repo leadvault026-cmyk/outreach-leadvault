@@ -162,7 +162,8 @@ export async function validateImportAction(
           tx,
           { workspaceId: ctx.workspace.id, userId: ctx.user.userId },
           importId,
-          parsed.data,
+          // validateImport parses the settings itself; pass the input, not the parsed output.
+          raw,
         );
         return { ok: true as const, data: undefined };
       }),

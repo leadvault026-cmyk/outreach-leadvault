@@ -401,3 +401,21 @@ describe("row planning", () => {
     ).toBe("invalid");
   });
 });
+
+describe("import settings schema", () => {
+  it("accepts its own parsed output (settings can be validated twice)", async () => {
+    const { importSettingsSchema } = await import("@/services/import-service");
+    const once = importSettingsSchema.parse({
+      sourceLabel: "Batch",
+      defaultCountryCode: "",
+      defaultBusinessType: "",
+      verificationMode: "trust",
+      onExisting: "update",
+    });
+    expect(once.defaultCountryCode).toBeNull();
+    expect(importSettingsSchema.parse(once)).toEqual(once);
+    expect(
+      importSettingsSchema.parse({ ...once, defaultCountryCode: "gb" }).defaultCountryCode,
+    ).toBe("GB");
+  });
+});

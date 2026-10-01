@@ -40,9 +40,11 @@ export type TxRunner = <T>(fn: (tx: AppDatabase) => Promise<T>) => Promise<T>;
 export const importSettingsSchema = z.object({
   sourceLabel: z.string().trim().min(1, "Give the import a name.").max(120),
   reference: z.string().trim().max(300).optional().default(""),
+  // Optional fields accept null so that parsing stored (already parsed) settings is idempotent.
   defaultCountryCode: z
     .string()
     .trim()
+    .nullish()
     .transform((v) => (v ? v.toUpperCase() : null))
     .pipe(
       z
@@ -54,6 +56,7 @@ export const importSettingsSchema = z.object({
     .string()
     .trim()
     .max(120)
+    .nullish()
     .transform((v) => v || null),
   verificationMode: z.enum(["trust", "ignore"]),
   verificationSourceLabel: z.string().trim().min(1).max(120).default("LeadVault research"),

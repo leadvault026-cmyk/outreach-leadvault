@@ -180,7 +180,7 @@ export default async function SuppressionPage({
         <div className="space-y-4">
           <p className="tabular text-xs text-muted-foreground">{total.toLocaleString()} entries</p>
           <div className="overflow-hidden rounded-lg border bg-card">
-            <table className="hidden w-full text-sm lg:table">
+            <table className="hidden w-full text-sm xl:table">
               <caption className="sr-only">Suppressions</caption>
               <thead>
                 <tr className="border-b bg-muted/50 text-left text-xs text-muted-foreground">
@@ -265,7 +265,7 @@ export default async function SuppressionPage({
                 ))}
               </tbody>
             </table>
-            <ul className="divide-y lg:hidden" aria-label="Suppressions">
+            <ul className="divide-y xl:hidden" aria-label="Suppressions">
               {rows.map((r) => (
                 <li key={r.id} className="space-y-1 px-4 py-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
