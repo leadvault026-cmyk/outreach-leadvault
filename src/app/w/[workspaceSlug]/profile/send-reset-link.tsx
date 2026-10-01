@@ -12,7 +12,9 @@ export function SendResetLink({ email }: { email: string }) {
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="email" value={email} />
-      {state.status === "success" ? <InlineAlert tone="success">{state.message}</InlineAlert> : null}
+      {state.status === "success" ? (
+        <InlineAlert tone="success">{state.message}</InlineAlert>
+      ) : null}
       {state.status === "error" ? (
         <InlineAlert tone="danger">Could not send the link. Try again shortly.</InlineAlert>
       ) : null}

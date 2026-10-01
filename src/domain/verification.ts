@@ -106,9 +106,10 @@ export function effectiveVerificationStatus(
 }
 
 /** Eligibility contribution (architecture §10 reason codes). */
-export function verificationEligibility(
-  status: EmailVerificationStatus,
-): { outcome: "ok" | "review" | "ineligible"; reason?: string } {
+export function verificationEligibility(status: EmailVerificationStatus): {
+  outcome: "ok" | "review" | "ineligible";
+  reason?: string;
+} {
   switch (status) {
     case "VERIFIED":
       return { outcome: "ok" };
@@ -127,7 +128,9 @@ export function verificationEligibility(
  */
 export interface EmailVerificationProvider {
   readonly name: string;
-  verify(emails: readonly string[]): Promise<
+  verify(
+    emails: readonly string[],
+  ): Promise<
     Array<{ email: string; label: string; checkedAt: Date } | { email: string; error: string }>
   >;
 }

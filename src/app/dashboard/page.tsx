@@ -16,7 +16,7 @@ export default async function DashboardEntry() {
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 text-center">
       <Wordmark tone="light" />
       <h1 className="mt-10 text-xl font-semibold">No workspace access yet</h1>
-      <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">
+      <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
         Your account is active, but you are not a member of any workspace. Ask a LeadVault
         administrator to add you to a workspace.
       </p>

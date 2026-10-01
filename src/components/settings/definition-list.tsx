@@ -2,10 +2,13 @@ import type { ReactNode } from "react";
 
 export function DefinitionList({ items }: { items: Array<{ term: string; value: ReactNode }> }) {
   return (
-    <dl className="bg-card divide-y rounded-lg border">
+    <dl className="divide-y rounded-lg border bg-card">
       {items.map((item) => (
-        <div key={item.term} className="grid gap-1 px-4 py-3 sm:grid-cols-[220px_minmax(0,1fr)] sm:gap-4">
-          <dt className="text-muted-foreground text-[13px] font-medium">{item.term}</dt>
+        <div
+          key={item.term}
+          className="grid gap-1 px-4 py-3 sm:grid-cols-[220px_minmax(0,1fr)] sm:gap-4"
+        >
+          <dt className="text-[13px] font-medium text-muted-foreground">{item.term}</dt>
           <dd className="min-w-0 text-sm break-words">{item.value}</dd>
         </div>
       ))}

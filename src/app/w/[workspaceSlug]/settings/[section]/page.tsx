@@ -31,7 +31,7 @@ export default async function PlannedSettingsSection({
       <PageHeader title={info.label} description={info.description} />
       <EmptyState
         icon={Settings2}
-        className="bg-card max-w-3xl"
+        className="max-w-3xl bg-card"
         title={`${info.label} settings are not active yet`}
         description={info.plannedDetail ?? "This settings area activates in a later phase."}
         action={

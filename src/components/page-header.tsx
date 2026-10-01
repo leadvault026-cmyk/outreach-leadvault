@@ -19,7 +19,7 @@ export function PageHeader({
           {badge}
         </div>
         {description ? (
-          <p className="text-muted-foreground mt-1.5 max-w-3xl text-sm leading-relaxed">
+          <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted-foreground">
             {description}
           </p>
         ) : null}

@@ -22,7 +22,8 @@
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "db:reset": "npx supabase db reset && npm run db:migrate && npm run db:seed"
+    "db:reset": "npx supabase db reset && npm run db:migrate && npm run db:seed",
+    "start:standalone": "node scripts/start-standalone.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -44,6 +45,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",

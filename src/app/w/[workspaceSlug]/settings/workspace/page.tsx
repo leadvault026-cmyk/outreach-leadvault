@@ -55,7 +55,7 @@ export default async function WorkspaceSettingsPage({
             { term: "Created", value: formatDateTime(ws.createdAt, ws.defaultTimezone) },
           ]}
         />
-        <p className="text-muted-foreground text-[13px]">
+        <p className="text-[13px] text-muted-foreground">
           {can(ctx.role, "workspace.settings")
             ? "Editing workspace details becomes available with workspace administration in a later phase."
             : "Only workspace Owners can change these settings."}

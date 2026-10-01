@@ -72,7 +72,9 @@ export function resolveJurisdictionPolicy(
         p.scope === scope &&
         (scope === "global" ? p.workspaceId === null : p.workspaceId === workspaceId) &&
         p.countryCode.toUpperCase() === country &&
-        (byRegion ? region !== null && p.regionCode?.toUpperCase() === region : p.regionCode === null),
+        (byRegion
+          ? region !== null && p.regionCode?.toUpperCase() === region
+          : p.regionCode === null),
     );
 
   const order: Array<[PolicyRow | undefined, ResolvedPolicy["matchedBy"]]> = [

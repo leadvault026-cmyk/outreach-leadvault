@@ -22,7 +22,9 @@ export function LoginForm({
 
   return (
     <form action={action} className="mt-8 space-y-4" noValidate>
-      {notice && state.status === "idle" ? <InlineAlert tone={noticeTone}>{notice}</InlineAlert> : null}
+      {notice && state.status === "idle" ? (
+        <InlineAlert tone={noticeTone}>{notice}</InlineAlert>
+      ) : null}
       {state.status === "error" && state.message ? (
         <InlineAlert tone="danger">{state.message}</InlineAlert>
       ) : null}
@@ -47,7 +49,10 @@ export function LoginForm({
           error={state.fieldErrors?.password}
         />
         <div className="text-right">
-          <Link href="/forgot-password" className="text-muted-foreground text-xs underline-offset-2 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+          >
             Forgot password?
           </Link>
         </div>

@@ -23,7 +23,9 @@ export default async function AuditLogPage({
   const ctx = await getPageContext(params);
   if (!ctx) return null;
   if (!can(ctx.role, "audit.view")) {
-    return <PermissionDenied requirement="The audit log is available to workspace Admins and Owners." />;
+    return (
+      <PermissionDenied requirement="The audit log is available to workspace Admins and Owners." />
+    );
   }
   const entries = await loadAuditLog(ctx);
   const tz = ctx.workspace.defaultTimezone;
@@ -42,18 +44,24 @@ export default async function AuditLogPage({
           className="bg-card"
         />
       ) : (
-        <div className="bg-card rounded-lg border">
+        <div className="rounded-lg border bg-card">
           <ul className="divide-y">
             {entries.map((e) => (
-              <li key={e.id} className="grid gap-1 px-4 py-3 md:grid-cols-[200px_minmax(0,1fr)_minmax(0,1fr)] md:gap-4">
-                <time className="text-muted-foreground tabular text-xs" dateTime={e.createdAt.toISOString()}>
+              <li
+                key={e.id}
+                className="grid gap-1 px-4 py-3 md:grid-cols-[200px_minmax(0,1fr)_minmax(0,1fr)] md:gap-4"
+              >
+                <time
+                  className="tabular text-xs text-muted-foreground"
+                  dateTime={e.createdAt.toISOString()}
+                >
                   {formatDateTime(e.createdAt, tz)}
                 </time>
                 <p className="text-sm">
                   <span className="font-medium">{AUDIT_ACTION_LABELS[e.action] ?? e.action}</span>
                   <span className="text-muted-foreground"> · {e.actorEmail ?? e.actorType}</span>
                 </p>
-                <p className="text-muted-foreground truncate text-xs">
+                <p className="truncate text-xs text-muted-foreground">
                   {describeMetadata(e.metadata as Record<string, unknown>) || e.entityType}
                 </p>
               </li>

@@ -3,7 +3,13 @@
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import type { WorkspaceSummary } from "@/server/workspace";
 import { SidebarContent } from "./sidebar-content";
 
@@ -25,7 +31,7 @@ export function MobileNav({
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="bg-sidebar w-[280px] max-w-[85vw] gap-0 border-r-0 p-0 [&>button]:text-white"
+        className="w-[280px] max-w-[85vw] gap-0 border-r-0 bg-sidebar p-0 [&>button]:text-white"
       >
         <SheetTitle className="sr-only">Navigation</SheetTitle>
         <SheetDescription className="sr-only">Primary application navigation</SheetDescription>

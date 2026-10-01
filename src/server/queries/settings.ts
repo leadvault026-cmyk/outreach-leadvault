@@ -1,7 +1,13 @@
 import "server-only";
 import { and, asc, desc, eq, isNull, or } from "drizzle-orm";
 import { withUserContext } from "@/db/client";
-import { auditLogs, jurisdictionPolicies, profiles, workspaceMembers, workspaces } from "@/db/schema";
+import {
+  auditLogs,
+  jurisdictionPolicies,
+  profiles,
+  workspaceMembers,
+  workspaces,
+} from "@/db/schema";
 import type { WorkspaceContext } from "../workspace";
 
 export async function loadWorkspaceDetails(ctx: WorkspaceContext) {

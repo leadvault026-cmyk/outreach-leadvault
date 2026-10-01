@@ -16,10 +16,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-      <p className="text-muted-foreground mt-1.5 text-sm">
+      <p className="mt-1.5 text-sm text-muted-foreground">
         Use the account your LeadVault administrator created for you.
       </p>
-      <LoginForm next={next} notice={notice} noticeTone={sp.link === "invalid" ? "warning" : "info"} />
+      <LoginForm
+        next={next}
+        notice={notice}
+        noticeTone={sp.link === "invalid" ? "warning" : "info"}
+      />
     </>
   );
 }

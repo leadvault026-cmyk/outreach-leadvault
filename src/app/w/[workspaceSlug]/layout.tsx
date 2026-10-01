@@ -39,7 +39,9 @@ export default async function WorkspaceLayout({
       workspace={workspace}
       workspaces={workspaces}
       user={{ fullName: profile.fullName, email: profile.email, role }}
-      environmentLabel={env === "production" ? null : env === "local" ? "Local development" : "Staging"}
+      environmentLabel={
+        env === "production" ? null : env === "local" ? "Local development" : "Staging"
+      }
     >
       {children}
     </AppShell>

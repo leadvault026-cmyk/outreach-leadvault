@@ -106,8 +106,7 @@ export type MailboxHealth = {
 };
 
 export type ConnectionCheck =
-  | { ok: true; checkedAt: Date }
-  | { ok: false; checkedAt: Date; error: ProviderError };
+  { ok: true; checkedAt: Date } | { ok: false; checkedAt: Date; error: ProviderError };
 
 /** What an adapter can offer the reconciliation and ingestion layers. */
 export type ProviderCapabilities = {

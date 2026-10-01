@@ -165,7 +165,10 @@ export async function updatePasswordAction(
       }),
     );
   } catch (auditError) {
-    logger.error("audit.write_failed", { action: AUDIT_ACTIONS.passwordChanged, error: auditError });
+    logger.error("audit.write_failed", {
+      action: AUDIT_ACTIONS.passwordChanged,
+      error: auditError,
+    });
   }
 
   redirect("/dashboard?password_updated=1");

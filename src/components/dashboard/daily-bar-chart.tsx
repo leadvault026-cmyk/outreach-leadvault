@@ -29,13 +29,18 @@ export function DailyBarChart({
     <figure className="min-w-0">
       <figcaption className="flex items-baseline justify-between gap-2">
         <span className="text-[13px] font-medium">{title}</span>
-        <span className="text-muted-foreground tabular text-xs">
+        <span className="tabular text-xs text-muted-foreground">
           {total.toLocaleString()} in 14 days
         </span>
       </figcaption>
       <div className="mt-3 h-40" aria-hidden>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }} barCategoryGap="28%">
+          <BarChart
+            accessibilityLayer={false}
+            data={data}
+            margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
+            barCategoryGap="28%"
+          >
             <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="0" />
             <XAxis
               dataKey="day"

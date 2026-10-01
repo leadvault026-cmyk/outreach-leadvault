@@ -27,7 +27,10 @@ export default async function ProfilePage({ params }: PageProps<"/w/[workspaceSl
 
   return (
     <>
-      <PageHeader title="Profile" description="Your account, workspace access and recent sign-in activity." />
+      <PageHeader
+        title="Profile"
+        description="Your account, workspace access and recent sign-in activity."
+      />
       <div className="grid max-w-5xl gap-6 lg:grid-cols-2">
         <section className="space-y-3" aria-labelledby="account-heading">
           <h2 id="account-heading" className="text-sm font-semibold">
@@ -49,7 +52,7 @@ export default async function ProfilePage({ params }: PageProps<"/w/[workspaceSl
           <h2 id="access-heading" className="text-sm font-semibold">
             Workspace access
           </h2>
-          <ul className="bg-card divide-y rounded-lg border">
+          <ul className="divide-y rounded-lg border bg-card">
             {workspaces.map((w) => (
               <li key={w.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
                 <span className="min-w-0 truncate">{w.name}</span>
@@ -63,10 +66,10 @@ export default async function ProfilePage({ params }: PageProps<"/w/[workspaceSl
           <h2 id="security-heading" className="text-sm font-semibold">
             Security
           </h2>
-          <div className="bg-card space-y-4 rounded-lg border p-4">
+          <div className="space-y-4 rounded-lg border bg-card p-4">
             <div>
               <h3 className="text-[13px] font-medium">Password</h3>
-              <p className="text-muted-foreground mt-1 text-[13px]">
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 For your security, password changes go through a link sent to your email address.
               </p>
               <div className="mt-3">
@@ -88,14 +91,20 @@ export default async function ProfilePage({ params }: PageProps<"/w/[workspaceSl
           <h2 id="activity-heading" className="text-sm font-semibold">
             Recent account activity
           </h2>
-          <ul className="bg-card divide-y rounded-lg border">
+          <ul className="divide-y rounded-lg border bg-card">
             {events.length === 0 ? (
-              <li className="text-muted-foreground px-4 py-3 text-sm">No recorded activity yet.</li>
+              <li className="px-4 py-3 text-sm text-muted-foreground">No recorded activity yet.</li>
             ) : (
               events.map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                <li
+                  key={e.id}
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                >
                   <span>{AUDIT_ACTION_LABELS[e.action] ?? e.action}</span>
-                  <time className="text-muted-foreground tabular text-xs" dateTime={e.createdAt.toISOString()}>
+                  <time
+                    className="tabular text-xs text-muted-foreground"
+                    dateTime={e.createdAt.toISOString()}
+                  >
                     {formatDateTime(e.createdAt, tz)}
                   </time>
                 </li>

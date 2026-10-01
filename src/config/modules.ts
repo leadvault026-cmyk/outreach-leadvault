@@ -48,7 +48,8 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
   },
   audiences: {
     title: "Audiences",
-    summary: "Reusable groups of prospects, such as “Texas medical providers”, used to start campaigns.",
+    summary:
+      "Reusable groups of prospects, such as “Texas medical providers”, used to start campaigns.",
     emptyTitle: "No audiences created",
     emptyDescription:
       "Audiences group prospects for campaign targeting. Membership never overrides suppression or eligibility.",
@@ -99,7 +100,8 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
   },
   inbox: {
     title: "Inbox",
-    summary: "One place for replies, matched to the prospect, campaign, recipient and original message.",
+    summary:
+      "One place for replies, matched to the prospect, campaign, recipient and original message.",
     emptyTitle: "No replies yet",
     emptyDescription:
       "Replies appear here once mailboxes are connected and campaigns are sending. A reply automatically stops that prospect's remaining sequence.",

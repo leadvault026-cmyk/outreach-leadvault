@@ -4,6 +4,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
+// Every page needs the per-request CSP nonce set by src/proxy.ts, which requires dynamic rendering.
+export const dynamic = "force-dynamic";
+
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {

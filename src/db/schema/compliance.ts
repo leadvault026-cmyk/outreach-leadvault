@@ -48,7 +48,10 @@ export const suppressions = appSchema.table(
   },
   (t) => [
     check("suppressions_scope_check", inList(t.scope, SUPPRESSION_SCOPES)),
-    check("suppressions_scope_workspace_check", sql`(${t.scope} = 'global') = (${t.workspaceId} is null)`),
+    check(
+      "suppressions_scope_workspace_check",
+      sql`(${t.scope} = 'global') = (${t.workspaceId} is null)`,
+    ),
     check("suppressions_value_type_check", inList(t.valueType, SUPPRESSION_VALUE_TYPES)),
     check("suppressions_reason_check", inList(t.reason, SUPPRESSION_REASONS)),
     check("suppressions_source_check", inList(t.source, SUPPRESSION_SOURCES)),

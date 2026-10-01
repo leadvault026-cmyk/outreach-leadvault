@@ -38,18 +38,18 @@ export function TopBar({
   const subLabel = sub ? SUBSECTION_LABELS[sub] : undefined;
 
   return (
-    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b px-3 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:px-6">
       <MobileNav workspace={workspace} workspaces={workspaces} />
 
       <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
         <ol className="flex min-w-0 items-center gap-1.5 text-sm">
-          <li className="text-muted-foreground hidden truncate md:block">{workspace.name}</li>
+          <li className="hidden truncate text-muted-foreground md:block">{workspace.name}</li>
           {section ? (
             <>
-              <li aria-hidden className="text-muted-foreground hidden md:block">
+              <li aria-hidden className="hidden text-muted-foreground md:block">
                 <ChevronRight className="size-3.5" />
               </li>
-              <li className={subLabel ? "text-muted-foreground truncate" : "truncate font-medium"}>
+              <li className={subLabel ? "truncate text-muted-foreground" : "truncate font-medium"}>
                 {section}
               </li>
             </>
@@ -71,7 +71,7 @@ export function TopBar({
         <NavSearch workspaceSlug={workspace.slug} />
         {environmentLabel ? (
           <span
-            className="border-warning/30 bg-warning-soft text-warning hidden rounded-md border px-2 py-1 text-[11px] font-semibold tracking-wide uppercase lg:inline"
+            className="hidden rounded-md border border-warning/30 bg-warning-soft px-2 py-1 text-[11px] font-semibold tracking-wide text-warning uppercase lg:inline"
             title="This is not a production environment. No email can be sent."
           >
             {environmentLabel}

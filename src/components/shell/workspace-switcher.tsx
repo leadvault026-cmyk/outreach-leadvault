@@ -33,7 +33,7 @@ export function WorkspaceSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="border-sidebar-border bg-sidebar-accent/40 hover:bg-sidebar-accent focus-visible:outline-sidebar-ring flex w-full items-center gap-3 rounded-md border px-2.5 py-2 text-left transition-colors"
+        className="flex w-full items-center gap-3 rounded-md border border-sidebar-border bg-sidebar-accent/40 px-2.5 py-2 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-sidebar-ring"
         aria-label={`Current workspace: ${current.name}. Switch workspace`}
       >
         <span
@@ -46,12 +46,12 @@ export function WorkspaceSwitcher({
           <span className="block truncate text-[13px] font-semibold text-white">
             {current.name}
           </span>
-          <span className="text-sidebar-muted block truncate text-[11px]">
+          <span className="block truncate text-[11px] text-sidebar-muted">
             {ROLE_LABELS[current.role]}
             {current.isDemo ? " · Demo data" : ""}
           </span>
         </span>
-        <ChevronsUpDown aria-hidden className="text-sidebar-muted size-4 shrink-0" />
+        <ChevronsUpDown aria-hidden className="size-4 shrink-0 text-sidebar-muted" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
         <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
@@ -61,7 +61,7 @@ export function WorkspaceSwitcher({
             <Link href={`/w/${w.slug}/dashboard`} className="flex items-center gap-2">
               <span className="min-w-0 flex-1">
                 <span className="block truncate">{w.name}</span>
-                <span className="text-muted-foreground block text-xs">
+                <span className="block text-xs text-muted-foreground">
                   {ROLE_LABELS[w.role]}
                   {w.isDemo ? " · Demo" : ""}
                 </span>

@@ -10,7 +10,12 @@ export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];
 export const MEMBER_STATUSES = ["invited", "active", "disabled"] as const;
 export const WORKSPACE_KINDS = ["internal", "client"] as const;
 
-export const ELIGIBILITY_STATUSES = ["ELIGIBLE", "INELIGIBLE", "SUPPRESSED", "NEEDS_REVIEW"] as const;
+export const ELIGIBILITY_STATUSES = [
+  "ELIGIBLE",
+  "INELIGIBLE",
+  "SUPPRESSED",
+  "NEEDS_REVIEW",
+] as const;
 export type EligibilityStatus = (typeof ELIGIBILITY_STATUSES)[number];
 
 /** Email verification (architecture §14.7.5; Phase 1 brief §23). */

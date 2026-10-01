@@ -20,7 +20,7 @@ export default async function TeamPage({ params }: PageProps<"/w/[workspaceSlug]
         description="People with access to this workspace. Access is invitation-only; there is no public sign-up."
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <section aria-labelledby="members-heading" className="bg-card min-w-0 rounded-lg border">
+        <section aria-labelledby="members-heading" className="min-w-0 rounded-lg border bg-card">
           <h2 id="members-heading" className="border-b px-4 py-3 text-sm font-semibold">
             Members ({team.length})
           </h2>
@@ -31,29 +31,31 @@ export default async function TeamPage({ params }: PageProps<"/w/[workspaceSlug]
                   <p className="truncate text-sm font-medium">
                     {m.fullName ?? m.email ?? "Unnamed member"}
                     {m.userId === ctx.user.userId ? (
-                      <span className="text-muted-foreground font-normal"> (you)</span>
+                      <span className="font-normal text-muted-foreground"> (you)</span>
                     ) : null}
                   </p>
-                  <p className="text-muted-foreground truncate text-xs">{m.email}</p>
+                  <p className="truncate text-xs text-muted-foreground">{m.email}</p>
                 </div>
                 <StatusBadge status={m.role} tone="neutral" label={ROLE_LABELS[m.role]} />
                 {m.status !== "active" ? <StatusBadge status={m.status} tone="warning" /> : null}
               </li>
             ))}
           </ul>
-          <p className="text-muted-foreground border-t px-4 py-3 text-xs">
+          <p className="border-t px-4 py-3 text-xs text-muted-foreground">
             Inviting members and changing roles becomes available with team administration in a
             later phase. Admins cannot change an Owner&apos;s role.
           </p>
         </section>
 
-        <aside className="bg-card rounded-lg border p-5">
+        <aside className="rounded-lg border bg-card p-5">
           <h2 className="text-sm font-semibold">Roles</h2>
           <dl className="mt-3 space-y-3">
             {WORKSPACE_ROLES.map((r) => (
               <div key={r}>
                 <dt className="text-[13px] font-medium">{ROLE_LABELS[r]}</dt>
-                <dd className="text-muted-foreground text-xs leading-relaxed">{ROLE_DESCRIPTIONS[r]}</dd>
+                <dd className="text-xs leading-relaxed text-muted-foreground">
+                  {ROLE_DESCRIPTIONS[r]}
+                </dd>
               </div>
             ))}
           </dl>

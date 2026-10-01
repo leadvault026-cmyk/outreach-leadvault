@@ -15,7 +15,10 @@ export default async function SettingsPage({ params }: PageProps<"/w/[workspaceS
 
   return (
     <>
-      <PageHeader title="Settings" description="Workspace configuration, team, compliance and audit." />
+      <PageHeader
+        title="Settings"
+        description="Workspace configuration, team, compliance and audit."
+      />
       <ul className="grid gap-3 md:grid-cols-2">
         {SETTINGS_SECTIONS.map((s) => {
           const allowed = can(ctx.role, s.capability);
@@ -23,7 +26,7 @@ export default async function SettingsPage({ params }: PageProps<"/w/[workspaceS
             <li key={s.key}>
               <Link
                 href={`/w/${ctx.workspace.slug}/settings/${s.key}`}
-                className="bg-card hover:border-foreground/20 flex h-full items-start gap-3 rounded-lg border p-4 transition-colors"
+                className="flex h-full items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-foreground/20"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -32,14 +35,17 @@ export default async function SettingsPage({ params }: PageProps<"/w/[workspaceS
                       <StatusBadge status="planned" tone="neutral" label="Planned" />
                     ) : null}
                     {!allowed ? (
-                      <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                         <Lock aria-hidden className="size-3" /> Admin
                       </span>
                     ) : null}
                   </div>
-                  <p className="text-muted-foreground mt-1 text-[13px]">{s.description}</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">{s.description}</p>
                 </div>
-                <ChevronRight aria-hidden className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+                <ChevronRight
+                  aria-hidden
+                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                />
               </Link>
             </li>
           );

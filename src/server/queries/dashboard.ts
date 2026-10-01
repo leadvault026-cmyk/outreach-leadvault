@@ -53,7 +53,11 @@ export async function loadDashboard(ctx: WorkspaceContext, now = new Date()) {
           .select({ n: count() })
           .from(messages)
           .where(
-            and(eq(messages.workspaceId, ws), eq(messages.status, "SENT"), gte(messages.sentAt, since30)),
+            and(
+              eq(messages.workspaceId, ws),
+              eq(messages.status, "SENT"),
+              gte(messages.sentAt, since30),
+            ),
           ),
       ),
       replies: await one(
@@ -96,7 +100,9 @@ export async function loadDashboard(ctx: WorkspaceContext, now = new Date()) {
         tx
           .select({ n: count() })
           .from(campaignRecipients)
-          .where(and(eq(campaignRecipients.workspaceId, ws), eq(campaignRecipients.status, "SCHEDULED"))),
+          .where(
+            and(eq(campaignRecipients.workspaceId, ws), eq(campaignRecipients.status, "SCHEDULED")),
+          ),
       ),
     };
 
@@ -106,7 +112,13 @@ export async function loadDashboard(ctx: WorkspaceContext, now = new Date()) {
         n: count(),
       })
       .from(messages)
-      .where(and(eq(messages.workspaceId, ws), eq(messages.status, "SENT"), gte(messages.sentAt, since14)))
+      .where(
+        and(
+          eq(messages.workspaceId, ws),
+          eq(messages.status, "SENT"),
+          gte(messages.sentAt, since14),
+        ),
+      )
       .groupBy(sql`1`);
 
     const repliesByDay = await tx
@@ -194,7 +206,9 @@ export async function loadDashboard(ctx: WorkspaceContext, now = new Date()) {
       tx
         .select({ n: count() })
         .from(replyThreads)
-        .where(and(eq(replyThreads.workspaceId, ws), eq(replyThreads.classification, "UNREVIEWED"))),
+        .where(
+          and(eq(replyThreads.workspaceId, ws), eq(replyThreads.classification, "UNREVIEWED")),
+        ),
     );
 
     const activity = await tx

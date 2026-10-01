@@ -54,8 +54,7 @@ export const listMyWorkspaces = cache(async (): Promise<WorkspaceSummary[]> => {
 });
 
 export type WorkspaceResolution =
-  | { ok: true; context: WorkspaceContext }
-  | { ok: false; reason: "not_available" };
+  { ok: true; context: WorkspaceContext } | { ok: false; reason: "not_available" };
 
 /**
  * Resolve a workspace by slug for the signed-in user. Non-membership and non-existence produce

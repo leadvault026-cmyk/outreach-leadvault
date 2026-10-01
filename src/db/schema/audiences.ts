@@ -82,7 +82,10 @@ export const templates = appSchema.table(
     name: text("name").notNull(),
     subject: text("subject").notNull(),
     body: text("body").notNull(),
-    variablesUsed: text("variables_used").array().notNull().default(sql`'{}'::text[]`),
+    variablesUsed: text("variables_used")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     createdBy: uuid("created_by"),
     archivedAt: timestamptz("archived_at"),
     ...timestamps,

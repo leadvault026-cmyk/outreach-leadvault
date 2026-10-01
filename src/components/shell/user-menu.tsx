@@ -38,12 +38,12 @@ export function UserMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="hover:bg-muted flex items-center gap-2 rounded-md p-1 pr-2 transition-colors"
+        className="flex items-center gap-2 rounded-md p-1 pr-2 transition-colors hover:bg-muted"
         aria-label="Account menu"
       >
         <span
           aria-hidden
-          className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold"
+          className="flex size-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
         >
           {initialsFrom(fullName, email)}
         </span>
@@ -51,7 +51,7 @@ export function UserMenu({
           <span className="block max-w-40 truncate text-[13px] leading-tight font-medium">
             {fullName ?? email}
           </span>
-          <span className="text-muted-foreground block text-[11px] leading-tight">
+          <span className="block text-[11px] leading-tight text-muted-foreground">
             {ROLE_LABELS[role]}
           </span>
         </span>
@@ -59,7 +59,7 @@ export function UserMenu({
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel className="font-normal">
           <span className="block truncate text-sm font-medium">{fullName ?? "Signed in"}</span>
-          <span className="text-muted-foreground block truncate text-xs">{email}</span>
+          <span className="block truncate text-xs text-muted-foreground">{email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

@@ -1,6 +1,6 @@
 # LeadVault Outreach — Architecture Proposal
 
-Status: **PROPOSAL — awaiting owner approval. No application code has been written.**
+Status: **APPROVED — Phase 1 (foundation) implemented. §32 records implementation notes and departures.**
 Prepared: 2026-10-01 · Revision 2: email-infrastructure verification gate · **Revision 3 (2026-10-01): outreach sending-infrastructure market investigation (§14.7)**
 
 **Revision 3 changes:** the outreach provider market was screened from official terms (§14.7). **Mission Inbox (Sales)** expressly permits B2B cold outreach with explicit conditions and becomes the **primary** infrastructure, with **Infraforge** as fallback, both via a generic SMTP/IMAP adapter. Google Workspace is demoted to last-resort fallback. One technical contradiction was found and resolved: Railway blocks outbound SMTP below **Pro**, so production/staging use Railway Pro. Added: warm-up/ramp enforcement, provider-threshold guardrails, pre-send email verification, and the B2B-only rule. Locked decisions are unchanged.
@@ -1702,6 +1702,31 @@ Only items that need business or owner input:
 | **Operational** | Single-person knowledge concentration | Runbook in repo (Phase 8); conventional, documented stack. |
 
 ---
+
+## 32. Phase 1 implementation notes (2026-10-01)
+
+Phase 1 built the foundation described above. Where the implementation differs from or refines
+this document, the change is recorded here.
+
+| # | Change | Why | Affects later phases? |
+|---|---|---|---|
+| 1 | All tables live in a dedicated **`app` schema** (not `public`). | Supabase's Data API exposes `public` only, so app tables are unreachable with the publishable key without any dashboard setting (implements §7 "Data API disabled for app tables"). | No. Drizzle/migrations already target `app`. |
+| 2 | **Schema additions:** `prospects.email_verification_status` / `email_verified_at` / `email_verification_source` / `email_verification_detail` (with a provenance CHECK); `prospect_imports.default_country_code`; `profiles.email` (synced from `auth.users` by trigger). | Verification model (§14.7.5); import-level country choice (§10); team views cannot read `auth.users` under RLS. | Yes, used from Phase 2. |
+| 3 | `pg_trgm` search indexes on prospects are **deferred** to the Phase 2 migration. | Search ships in Phase 2. Adding indexes later is non-destructive. | Phase 2 adds them. |
+| 4 | Routes are workspace-scoped: **`/w/[workspaceSlug]/…`** (§6). `/dashboard`, `/prospects`, `/campaigns`, etc. redirect to the last-used workspace (cookie set by the proxy, re-verified on use). | Meets the brief's route list without losing workspace-in-URL safety. | No. |
+| 5 | Sidebar group is labelled **Infrastructure** (Phase 1 brief) rather than "Deliverability" (§22). Imports sits under Prospecting. | Latest owner instruction. | No. |
+| 6 | Runtime **Node 22.12+** (local machine has Node 22); §2 said Node 24 LTS. | Available toolchain; Next.js 16 supports both. | Railway image pins `node:22-alpine`; can move to 24 later. |
+| 7 | Minimal redacting JSON logger (`src/server/logger.ts`) instead of **pino**; **Sentry not configured**. | No new dependency or account in Phase 1. Same log shape. | pino arrives with the worker (Phase 5). Sentry needs an account (free tier) before staging. |
+| 8 | React Hook Form, nuqs and TanStack Table are **not installed yet**. | Phase 1 forms are small server-action forms (Zod-validated server-side). No data tables yet. | Added in Phase 2 when tables/filters ship. |
+| 9 | Supabase auth emails use **token-hash links** (`/auth/confirm`), and the local stack catches them in Mailpit. Custom SMTP (Resend) is **not configured**. | Works across browsers/devices. $0 local development. | Production requires custom SMTP before invitations are used. |
+| 10 | Local Supabase: `[auth] enable_signup = false` (public sign-up blocked); `[auth.email] enable_signup` must stay **true**. In this CLI version, setting it to false disables email login entirely. | Verified empirically (sign-in OK, public sign-up returns `signup_disabled`). | Hosted project: disable sign-ups in Auth settings. |
+| 11 | Database tests run on **PGlite** (real PostgreSQL in WebAssembly) with a small shim for Supabase's `auth.users`, `anon` and `authenticated`. E2E runs on the Supabase CLI stack. | Fast, $0, no Docker for unit/DB tests. The suite was mutation-checked: disabling RLS on one table makes isolation tests fail. | No. |
+| 12 | Every route is rendered dynamically (`force-dynamic` in the root layout). | Required for the per-request CSP nonce (§21). | No. Pages are per-user anyway. |
+| 13 | Workspace-access denials are audited as **workspace-less** events attributed to the user (privileged insert). | A non-member has no workspace context to write into. Avoids revealing workspace existence. | No. |
+| 14 | MFA not enforced. Workspace-creation and team-invitation UIs are not built (read-only Team/Workspace pages). | Phase 1 scope; MFA is owner decision §30-7. | Later phases. |
+
+**Phase 0 provider test:** **DEFERRED — PAYMENT REQUIRED.** Mission Inbox and Infraforge have no
+free tier, and no purchase is authorized in Phase 1. Running SMTP from Railway also needs Pro.
 
 ## Sources (consulted 2026-10-01)
 

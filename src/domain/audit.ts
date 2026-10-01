@@ -11,7 +11,8 @@ export const AUDIT_ACTIONS = {
 } as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
 
-const SENSITIVE_KEY = /pass(word)?|secret|token|api[-_]?key|credential|authori[sz]ation|cookie|session|private|signature|body|html|content/i;
+const SENSITIVE_KEY =
+  /pass(word)?|secret|token|api[-_]?key|credential|authori[sz]ation|cookie|session|private|signature|body|html|content/i;
 const MAX_STRING = 500;
 const MAX_KEYS = 30;
 const MAX_ARRAY = 20;

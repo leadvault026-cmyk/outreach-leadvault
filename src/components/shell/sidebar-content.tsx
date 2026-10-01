@@ -33,7 +33,7 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       className={cn(
         "group relative flex h-9 items-center gap-3 rounded-md px-3 text-[13.5px] font-medium transition-colors",
-        "focus-visible:outline-sidebar-ring focus-visible:outline-2 focus-visible:outline-offset-0",
+        "focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-sidebar-ring",
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
           : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-white",
@@ -65,12 +65,12 @@ export function SidebarContent({
   const activeKey = activeNavKey(pathname);
 
   return (
-    <div className="bg-sidebar text-sidebar-foreground flex h-full flex-col">
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex h-16 shrink-0 items-center px-5">
         <Link
           href={workspaceHref(workspace.slug, "dashboard")}
           onClick={onNavigate}
-          className="focus-visible:outline-sidebar-ring rounded-sm"
+          className="rounded-sm focus-visible:outline-sidebar-ring"
           aria-label="LeadVault Outreach — dashboard"
         >
           <Wordmark />
@@ -85,7 +85,7 @@ export function SidebarContent({
         {NAV_SECTIONS.map((section) => (
           <div key={section.label ?? "root"} className="mt-4 first:mt-1">
             {section.label ? (
-              <p className="text-sidebar-muted mb-1.5 px-3 text-[11px] font-semibold tracking-[0.12em] uppercase">
+              <p className="mb-1.5 px-3 text-[11px] font-semibold tracking-[0.12em] text-sidebar-muted uppercase">
                 {section.label}
               </p>
             ) : null}
@@ -105,7 +105,7 @@ export function SidebarContent({
         ))}
       </nav>
 
-      <div className="border-sidebar-border border-t px-3 py-3">
+      <div className="border-t border-sidebar-border px-3 py-3">
         <NavLink
           item={SETTINGS_NAV_ITEM}
           workspaceSlug={workspace.slug}

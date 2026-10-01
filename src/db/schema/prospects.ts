@@ -66,7 +66,10 @@ export const prospects = appSchema.table(
     businessType: text("business_type"),
     qualificationBasis: text("qualification_basis"),
     evidenceUrl: text("evidence_url"),
-    customFields: jsonb("custom_fields").$type<Record<string, string | number | null>>().notNull().default({}),
+    customFields: jsonb("custom_fields")
+      .$type<Record<string, string | number | null>>()
+      .notNull()
+      .default({}),
     researchSourceRef: text("research_source_ref"),
     researchApprovedAt: timestamptz("research_approved_at"),
     firstImportId: uuid("first_import_id"),
@@ -91,7 +94,10 @@ export const prospects = appSchema.table(
       "prospects_email_normalized_check",
       sql`${t.emailNormalized} is null or ${t.emailNormalized} = lower(btrim(${t.emailNormalized}))`,
     ),
-    check("prospects_country_format", sql`${t.countryCode} is null or ${t.countryCode} ~ '^[A-Z]{2}$'`),
+    check(
+      "prospects_country_format",
+      sql`${t.countryCode} is null or ${t.countryCode} ~ '^[A-Z]{2}$'`,
+    ),
     check(
       "prospects_verification_status_check",
       inList(t.emailVerificationStatus, EMAIL_VERIFICATION_STATUSES),
@@ -120,7 +126,10 @@ export const prospectOutreachState = appSchema.table(
     prospectId: uuid("prospect_id").primaryKey(),
     workspaceId: uuid("workspace_id").notNull(),
     eligibility: text("eligibility", { enum: ELIGIBILITY_STATUSES }).notNull(),
-    eligibilityReasons: text("eligibility_reasons").array().notNull().default(sql`'{}'::text[]`),
+    eligibilityReasons: text("eligibility_reasons")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     eligibilityCheckedAt: timestamptz("eligibility_checked_at").notNull(),
     reviewDecision: text("review_decision", { enum: ["approved", "rejected"] }),
     reviewDecidedBy: uuid("review_decided_by"),

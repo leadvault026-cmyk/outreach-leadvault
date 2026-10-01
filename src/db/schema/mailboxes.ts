@@ -47,8 +47,13 @@ export const providerConnections = appSchema.table(
     status: text("status", { enum: PROVIDER_CONNECTION_STATUSES }).notNull(),
     encryptedCredentials: bytea("encrypted_credentials").notNull(),
     credentialsKeyVersion: smallint("credentials_key_version").notNull(),
-    scopes: text("scopes").array().notNull().default(sql`'{}'::text[]`),
-    ingestionMode: text("ingestion_mode", { enum: INGESTION_MODES }).notNull().default("provider_api"),
+    scopes: text("scopes")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    ingestionMode: text("ingestion_mode", { enum: INGESTION_MODES })
+      .notNull()
+      .default("provider_api"),
     inboundRoutingAddress: text("inbound_routing_address"),
     accessTokenExpiresAt: timestamptz("access_token_expires_at"),
     syncCursor: text("sync_cursor"),
@@ -62,7 +67,11 @@ export const providerConnections = appSchema.table(
   },
   (t) => [
     unique("provider_connections_workspace_id_id_key").on(t.workspaceId, t.id),
-    unique("provider_connections_ws_provider_email_key").on(t.workspaceId, t.provider, t.accountEmail),
+    unique("provider_connections_ws_provider_email_key").on(
+      t.workspaceId,
+      t.provider,
+      t.accountEmail,
+    ),
     check("provider_connections_provider_check", inList(t.provider, PROVIDERS)),
     check("provider_connections_status_check", inList(t.status, PROVIDER_CONNECTION_STATUSES)),
     check("provider_connections_ingestion_check", inList(t.ingestionMode, INGESTION_MODES)),
@@ -86,7 +95,10 @@ export const mailboxes = appSchema.table(
     enabled: boolean("enabled").notNull().default(true),
     dailySendLimit: integer("daily_send_limit").notNull(),
     minSecondsBetweenSends: integer("min_seconds_between_sends").notNull().default(90),
-    sendDays: smallint("send_days").array().notNull().default(sql`'{1,2,3,4,5}'::smallint[]`),
+    sendDays: smallint("send_days")
+      .array()
+      .notNull()
+      .default(sql`'{1,2,3,4,5}'::smallint[]`),
     windowStart: time("window_start").notNull().default("08:00"),
     windowEnd: time("window_end").notNull().default("17:00"),
     timezone: text("timezone").notNull(),
@@ -138,7 +150,9 @@ export const sendingIdentities = appSchema.table(
       columns: [t.workspaceId, t.mailboxId],
       foreignColumns: [mailboxes.workspaceId, mailboxes.id],
     }),
-    uniqueIndex("sending_identities_default_uq").on(t.mailboxId).where(sql`${t.isDefault}`),
+    uniqueIndex("sending_identities_default_uq")
+      .on(t.mailboxId)
+      .where(sql`${t.isDefault}`),
   ],
 );
 

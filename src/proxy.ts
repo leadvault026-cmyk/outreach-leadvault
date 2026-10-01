@@ -29,7 +29,7 @@ function buildCsp(nonce: string): string {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    ...(isDev ? [] : ["upgrade-insecure-requests"]),
+    ...(process.env.APP_ENV === "production" ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
 }
 
@@ -90,6 +90,18 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthenticated && AUTH_ONLY_PATHS.some((re) => re.test(pathname))) {
     return redirectTo(new URL("/dashboard", request.url));
+  }
+
+  // Remember the last workspace visited (a preference only — membership is re-verified on use).
+  const workspaceMatch = /^\/w\/([a-z0-9-]{2,48})(\/|$)/.exec(pathname);
+  if (isAuthenticated && workspaceMatch) {
+    response.cookies.set("lvo_last_ws", workspaceMatch[1]!, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.APP_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 180,
+    });
   }
 
   response.headers.set("Content-Security-Policy", csp);

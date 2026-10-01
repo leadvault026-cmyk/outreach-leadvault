@@ -68,6 +68,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     description: "Two-factor authentication and session policies.",
     status: "planned",
     capability: "workspace.view",
-    plannedDetail: "MFA enforcement for Owners and Admins is planned for Phase 8 (owner decision §30-7).",
+    plannedDetail:
+      "MFA enforcement for Owners and Admins is planned for Phase 8 (owner decision §30-7).",
   },
 ];

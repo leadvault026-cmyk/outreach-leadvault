@@ -26,17 +26,17 @@ export default async function CompliancePage({
       <div className="max-w-4xl space-y-6">
         <InlineAlert tone="info" title="Fail-closed by default">
           A country or region with no policy, or a prospect with no country, resolves to{" "}
-          <strong>Review</strong> and is held from sending. Only an explicit <strong>Allowed</strong>{" "}
-          policy makes a jurisdiction sendable. Precedence: workspace region → workspace country →
-          LeadVault-wide region → LeadVault-wide country → Review.
+          <strong>Review</strong> and is held from sending. Only an explicit{" "}
+          <strong>Allowed</strong> policy makes a jurisdiction sendable. Precedence: workspace
+          region → workspace country → LeadVault-wide region → LeadVault-wide country → Review.
         </InlineAlert>
 
-        <section aria-labelledby="policies-heading" className="bg-card rounded-lg border">
+        <section aria-labelledby="policies-heading" className="rounded-lg border bg-card">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
             <h2 id="policies-heading" className="text-sm font-semibold">
               Configured jurisdictions
             </h2>
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               {allowedCount} allowed · {policies.length} configured
             </span>
           </div>
@@ -56,15 +56,22 @@ export default async function CompliancePage({
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">
                       {p.regionCode ?? p.countryCode}{" "}
-                      <span className="text-muted-foreground font-normal">
+                      <span className="font-normal text-muted-foreground">
                         · {p.scope === "global" ? "LeadVault-wide" : "This workspace"}
                       </span>
                     </p>
-                    <p className="text-muted-foreground mt-0.5 text-xs">
-                      {p.requiresPostalAddress ? "Postal address required" : "Postal address optional"} ·{" "}
-                      {p.requiresUnsubscribeLink ? "Unsubscribe link required" : "Unsubscribe link optional"}
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {p.requiresPostalAddress
+                        ? "Postal address required"
+                        : "Postal address optional"}{" "}
+                      ·{" "}
+                      {p.requiresUnsubscribeLink
+                        ? "Unsubscribe link required"
+                        : "Unsubscribe link optional"}
                     </p>
-                    {p.notes ? <p className="text-muted-foreground mt-1 text-xs">{p.notes}</p> : null}
+                    {p.notes ? (
+                      <p className="mt-1 text-xs text-muted-foreground">{p.notes}</p>
+                    ) : null}
                   </div>
                   <StatusBadge status={p.outreachStatus} />
                 </li>

@@ -25,11 +25,11 @@ export function EmptyState({
         className,
       )}
     >
-      <span className="bg-muted text-muted-foreground mb-4 flex size-11 items-center justify-center rounded-full">
+      <span className="mb-4 flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
         <Icon aria-hidden className="size-5" />
       </span>
       <Heading className="text-base font-semibold">{title}</Heading>
-      <p className="text-muted-foreground mt-1.5 max-w-md text-sm leading-relaxed">{description}</p>
+      <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted-foreground">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );

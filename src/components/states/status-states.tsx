@@ -26,7 +26,7 @@ function StateFrame({
         {icon}
       </span>
       <h1 className="text-lg font-semibold">{title}</h1>
-      <div className="text-muted-foreground mt-2 text-sm leading-relaxed">{children}</div>
+      <div className="mt-2 text-sm leading-relaxed text-muted-foreground">{children}</div>
       {footer ? <div className="mt-6 flex flex-wrap justify-center gap-2">{footer}</div> : null}
     </div>
   );
@@ -71,7 +71,7 @@ export function SystemError({
       <p>We couldn&apos;t load this page. The problem has been logged.</p>
       {reference ? (
         <p className="mt-2">
-          Reference: <code className="bg-muted rounded px-1.5 py-0.5 text-xs">{reference}</code>
+          Reference: <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{reference}</code>
         </p>
       ) : null}
     </StateFrame>
@@ -87,8 +87,8 @@ export function WorkspaceUnavailable({ footer }: { footer?: ReactNode }) {
       footer={footer}
     >
       <p>
-        This workspace doesn&apos;t exist, or your account isn&apos;t a member of it. Check the link,
-        or switch to one of your workspaces.
+        This workspace doesn&apos;t exist, or your account isn&apos;t a member of it. Check the
+        link, or switch to one of your workspaces.
       </p>
     </StateFrame>
   );

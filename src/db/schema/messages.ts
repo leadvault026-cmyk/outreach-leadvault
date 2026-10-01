@@ -136,7 +136,10 @@ export const messages = appSchema.table(
       sql`${t.kind} <> 'sequence' or (${t.campaignId} is not null and ${t.campaignRecipientId} is not null and ${t.stepNumber} is not null)`,
     ),
     check("messages_sent_at_check", sql`${t.status} <> 'SENT' or ${t.sentAt} is not null`),
-    check("messages_attempts_check", sql`${t.attemptCount} >= 0 and ${t.reconciliationChecks} >= 0`),
+    check(
+      "messages_attempts_check",
+      sql`${t.attemptCount} >= 0 and ${t.reconciliationChecks} >= 0`,
+    ),
   ],
 );
 

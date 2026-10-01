@@ -67,12 +67,12 @@ export function NavSearch({ workspaceSlug }: { workspaceSlug: string }) {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="text-muted-foreground h-9 w-9 justify-center px-0 sm:w-64 sm:justify-start sm:px-3"
+        className="h-9 w-9 justify-center px-0 text-muted-foreground sm:w-64 sm:justify-start sm:px-3"
         aria-label="Search (Ctrl+K)"
       >
         <Search className="size-4" />
         <span className="hidden sm:inline">Search…</span>
-        <kbd className="bg-muted ml-auto hidden rounded border px-1.5 text-[10px] font-medium sm:inline">
+        <kbd className="ml-auto hidden rounded border bg-muted px-1.5 text-[10px] font-medium sm:inline">
           Ctrl K
         </kbd>
       </Button>
@@ -90,7 +90,7 @@ export function NavSearch({ workspaceSlug }: { workspaceSlug: string }) {
             Jump to a section of LeadVault Outreach. Use the arrow keys to choose and Enter to open.
           </DialogDescription>
           <div className="flex items-center gap-2 border-b px-3">
-            <Search aria-hidden className="text-muted-foreground size-4" />
+            <Search aria-hidden className="size-4 text-muted-foreground" />
             <input
               autoFocus
               value={query}
@@ -115,13 +115,20 @@ export function NavSearch({ workspaceSlug }: { workspaceSlug: string }) {
               role="combobox"
               aria-expanded="true"
               aria-controls={listId}
-              aria-activedescendant={results[active] ? `${listId}-${results[active].key}` : undefined}
-              className="placeholder:text-muted-foreground h-12 w-full bg-transparent text-sm outline-none focus-visible:outline-none"
+              aria-activedescendant={
+                results[active] ? `${listId}-${results[active].key}` : undefined
+              }
+              className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none"
             />
           </div>
-          <ul id={listId} role="listbox" aria-label="Sections" className="max-h-80 overflow-y-auto p-2">
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label="Sections"
+            className="max-h-80 overflow-y-auto p-2"
+          >
             {results.length === 0 ? (
-              <li className="text-muted-foreground px-3 py-6 text-center text-sm">
+              <li className="px-3 py-6 text-center text-sm text-muted-foreground">
                 No matching sections.
               </li>
             ) : (
@@ -140,12 +147,12 @@ export function NavSearch({ workspaceSlug }: { workspaceSlug: string }) {
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium">{r.label}</span>
-                    <span className="text-muted-foreground block truncate text-xs">
+                    <span className="block truncate text-xs text-muted-foreground">
                       {r.description}
                     </span>
                   </span>
                   {i === active ? (
-                    <CornerDownLeft aria-hidden className="text-muted-foreground size-3.5" />
+                    <CornerDownLeft aria-hidden className="size-3.5 text-muted-foreground" />
                   ) : null}
                 </li>
               ))

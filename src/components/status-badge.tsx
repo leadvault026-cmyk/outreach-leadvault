@@ -84,6 +84,6 @@ export function StatusBadge({
 
 export function DemoBadge() {
   return (
-    <StatusBadge status="demo" tone="info" label="Demo data" className="uppercase tracking-wide" />
+    <StatusBadge status="demo" tone="info" label="Demo data" className="tracking-wide uppercase" />
   );
 }

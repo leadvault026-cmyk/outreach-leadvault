@@ -3,7 +3,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const OTP_TYPES: readonly EmailOtpType[] = ["recovery", "invite", "magiclink", "email", "email_change"];
+const OTP_TYPES: readonly EmailOtpType[] = [
+  "recovery",
+  "invite",
+  "magiclink",
+  "email",
+  "email_change",
+];
 
 /**
  * Completes email links (password recovery, invitations). Supports the token_hash flow

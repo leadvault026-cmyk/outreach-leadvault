@@ -10,8 +10,9 @@ export default async function ResetPasswordPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">Choose a new password</h1>
-      <p className="text-muted-foreground mt-1.5 text-sm">
-        Setting a new password for <span className="text-foreground font-medium">{user.email}</span>.
+      <p className="mt-1.5 text-sm text-muted-foreground">
+        Setting a new password for <span className="font-medium text-foreground">{user.email}</span>
+        .
       </p>
       <ResetPasswordForm />
     </>

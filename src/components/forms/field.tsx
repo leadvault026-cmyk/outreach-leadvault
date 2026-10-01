@@ -24,12 +24,12 @@ export function Field({
         {...props}
       />
       {hint && !error ? (
-        <p id={`${id}-hint`} className="text-muted-foreground text-xs">
+        <p id={`${id}-hint`} className="text-xs text-muted-foreground">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={`${id}-error`} className="text-danger text-xs">
+        <p id={`${id}-error`} className="text-xs text-danger">
           {error}
         </p>
       ) : null}

@@ -136,10 +136,14 @@ export default async function DashboardPage({
               </div>
             </Panel>
 
-            <Panel title="Campaigns requiring attention" description="Items an operator should review">
+            <Panel
+              title="Campaigns requiring attention"
+              description="Items an operator should review"
+            >
               {attentionCount === 0 && attention.unreviewedReplies === 0 ? (
-                <p className="text-muted-foreground flex items-center gap-2 text-sm">
-                  <CheckCircle2 aria-hidden className="text-success size-4" /> Nothing needs attention.
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 aria-hidden className="size-4 text-success" /> Nothing needs
+                  attention.
                 </p>
               ) : (
                 <ul className="space-y-3">
@@ -148,7 +152,9 @@ export default async function DashboardPage({
                       <StatusBadge status="PAUSED" />
                       <div className="min-w-0 text-sm">
                         <p className="truncate font-medium">{c.name}</p>
-                        <p className="text-muted-foreground text-xs">{c.reason ?? "Paused by an operator"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.reason ?? "Paused by an operator"}
+                        </p>
                       </div>
                     </li>
                   ))}
@@ -157,7 +163,7 @@ export default async function DashboardPage({
                       <StatusBadge status={m.status} />
                       <div className="min-w-0 text-sm">
                         <p className="truncate font-medium">{m.emailAddress}</p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-xs text-muted-foreground">
                           {m.statusReason ?? "Mailbox needs review"}
                         </p>
                       </div>
@@ -167,8 +173,8 @@ export default async function DashboardPage({
                     <li className="flex items-start gap-3">
                       <StatusBadge status="review" label="Send review" />
                       <p className="text-sm">
-                        {attention.reviewMessages} send{attention.reviewMessages === 1 ? "" : "s"} awaiting
-                        reconciliation or operator review
+                        {attention.reviewMessages} send{attention.reviewMessages === 1 ? "" : "s"}{" "}
+                        awaiting reconciliation or operator review
                       </p>
                     </li>
                   ) : null}
@@ -176,8 +182,8 @@ export default async function DashboardPage({
                     <li className="flex items-start gap-3">
                       <StatusBadge status="UNREVIEWED" />
                       <p className="text-sm">
-                        {attention.unreviewedReplies} repl{attention.unreviewedReplies === 1 ? "y" : "ies"} to
-                        classify in the{" "}
+                        {attention.unreviewedReplies} repl
+                        {attention.unreviewedReplies === 1 ? "y" : "ies"} to classify in the{" "}
                         <Link href={`/w/${slug}/inbox`} className="underline underline-offset-2">
                           Inbox
                         </Link>
@@ -194,31 +200,50 @@ export default async function DashboardPage({
               title="Recent campaigns"
               className="xl:col-span-2"
               action={
-                <Link href={`/w/${slug}/campaigns`} className="text-muted-foreground text-xs underline-offset-2 hover:underline">
+                <Link
+                  href={`/w/${slug}/campaigns`}
+                  className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                >
                   All campaigns
                 </Link>
               }
             >
               {data.recentCampaigns.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No campaigns yet.</p>
+                <p className="text-sm text-muted-foreground">No campaigns yet.</p>
               ) : (
                 <>
                   <table className="hidden w-full text-sm md:table">
                     <thead>
-                      <tr className="text-muted-foreground border-b text-left text-xs">
-                        <th scope="col" className="pb-2 font-medium">Campaign</th>
-                        <th scope="col" className="pb-2 font-medium">Status</th>
-                        <th scope="col" className="pb-2 text-right font-medium">Recipients</th>
-                        <th scope="col" className="pb-2 text-right font-medium">Sent</th>
-                        <th scope="col" className="pb-2 text-right font-medium">Replies</th>
-                        <th scope="col" className="pb-2 text-right font-medium">Reply rate</th>
+                      <tr className="border-b text-left text-xs text-muted-foreground">
+                        <th scope="col" className="pb-2 font-medium">
+                          Campaign
+                        </th>
+                        <th scope="col" className="pb-2 font-medium">
+                          Status
+                        </th>
+                        <th scope="col" className="pb-2 text-right font-medium">
+                          Recipients
+                        </th>
+                        <th scope="col" className="pb-2 text-right font-medium">
+                          Sent
+                        </th>
+                        <th scope="col" className="pb-2 text-right font-medium">
+                          Replies
+                        </th>
+                        <th scope="col" className="pb-2 text-right font-medium">
+                          Reply rate
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="tabular">
                       {data.recentCampaigns.map((c) => (
                         <tr key={c.id} className="border-b last:border-0">
-                          <td className="max-w-[260px] truncate py-2.5 pr-3 font-medium">{c.name}</td>
-                          <td className="py-2.5 pr-3"><StatusBadge status={c.status} /></td>
+                          <td className="max-w-[260px] truncate py-2.5 pr-3 font-medium">
+                            {c.name}
+                          </td>
+                          <td className="py-2.5 pr-3">
+                            <StatusBadge status={c.status} />
+                          </td>
                           <td className="py-2.5 text-right">{c.recipients}</td>
                           <td className="py-2.5 text-right">{c.sent}</td>
                           <td className="py-2.5 text-right">{c.replies}</td>
@@ -234,7 +259,7 @@ export default async function DashboardPage({
                           <p className="min-w-0 text-sm font-medium">{c.name}</p>
                           <StatusBadge status={c.status} />
                         </div>
-                        <p className="text-muted-foreground tabular mt-1 text-xs">
+                        <p className="tabular mt-1 text-xs text-muted-foreground">
                           {c.recipients} recipients · {c.sent} sent · {c.replies} replies (
                           {percent(c.replies, c.sent)})
                         </p>
@@ -245,9 +270,12 @@ export default async function DashboardPage({
               )}
             </Panel>
 
-            <Panel title="Mailbox health" description="Sent today against each mailbox's daily limit">
+            <Panel
+              title="Mailbox health"
+              description="Sent today against each mailbox's daily limit"
+            >
               {data.mailboxHealth.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No mailboxes connected.</p>
+                <p className="text-sm text-muted-foreground">No mailboxes connected.</p>
               ) : (
                 <ul className="space-y-4">
                   {data.mailboxHealth.map((m) => {
@@ -256,27 +284,30 @@ export default async function DashboardPage({
                       <li key={m.id}>
                         <div className="flex items-start justify-between gap-2">
                           <p className="flex min-w-0 items-center gap-2 text-sm">
-                            <Mail aria-hidden className="text-muted-foreground size-3.5 shrink-0" />
+                            <Mail aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
                             <span className="truncate">{m.emailAddress}</span>
                           </p>
                           <StatusBadge status={m.status} />
                         </div>
                         <div className="mt-2 flex items-center gap-3">
                           <div
-                            className="bg-muted h-1.5 flex-1 overflow-hidden rounded-full"
+                            className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"
                             role="meter"
                             aria-label={`${m.emailAddress} daily usage`}
                             aria-valuemin={0}
                             aria-valuemax={m.dailySendLimit}
                             aria-valuenow={m.sentToday}
                           >
-                            <div className="bg-chart-1 h-full rounded-full" style={{ width: `${pct}%` }} />
+                            <div
+                              className="h-full rounded-full bg-chart-1"
+                              style={{ width: `${pct}%` }}
+                            />
                           </div>
-                          <span className="text-muted-foreground tabular text-xs whitespace-nowrap">
+                          <span className="tabular text-xs whitespace-nowrap text-muted-foreground">
                             {m.sentToday}/{m.dailySendLimit}
                           </span>
                         </div>
-                        <p className="text-muted-foreground mt-1 text-xs">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           Warm-up: {m.warmupStatus === "ready" ? "complete" : m.warmupStatus}
                         </p>
                       </li>
@@ -290,7 +321,7 @@ export default async function DashboardPage({
           <div className="grid gap-6 xl:grid-cols-2">
             <Panel title="Recent replies">
               {data.recentReplies.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No replies yet.</p>
+                <p className="text-sm text-muted-foreground">No replies yet.</p>
               ) : (
                 <ul className="divide-y">
                   {data.recentReplies.map((r) => (
@@ -300,14 +331,19 @@ export default async function DashboardPage({
                           <p className="truncate text-sm font-medium">
                             {r.fromName ?? r.fromEmail}
                             {r.company ? (
-                              <span className="text-muted-foreground font-normal"> · {r.company}</span>
+                              <span className="font-normal text-muted-foreground">
+                                {" "}
+                                · {r.company}
+                              </span>
                             ) : null}
                           </p>
-                          <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs">{r.snippet}</p>
+                          <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                            {r.snippet}
+                          </p>
                         </div>
                         <StatusBadge status={r.classification} />
                       </div>
-                      <p className="text-muted-foreground mt-1 text-xs">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {r.campaign ?? "Unmatched"} · {relativeTime(r.receivedAt, now)}
                       </p>
                     </li>
@@ -318,18 +354,22 @@ export default async function DashboardPage({
 
             <Panel title="Activity" description="Latest message events">
               {data.activity.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No activity yet.</p>
+                <p className="text-sm text-muted-foreground">No activity yet.</p>
               ) : (
                 <ol className="space-y-3">
                   {data.activity.map((a) => (
                     <li key={a.id} className="flex items-start gap-3 text-sm">
-                      <span aria-hidden className="bg-border mt-1.5 size-2 shrink-0 rounded-full" />
+                      <span aria-hidden className="mt-1.5 size-2 shrink-0 rounded-full bg-border" />
                       <div className="min-w-0">
                         <p>
-                          <span className="font-medium">{EVENT_LABELS[a.eventType] ?? a.eventType}</span>
-                          {a.company ? <span className="text-muted-foreground"> · {a.company}</span> : null}
+                          <span className="font-medium">
+                            {EVENT_LABELS[a.eventType] ?? a.eventType}
+                          </span>
+                          {a.company ? (
+                            <span className="text-muted-foreground"> · {a.company}</span>
+                          ) : null}
                         </p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-xs text-muted-foreground">
                           {a.campaign ? `${a.campaign} · ` : ""}
                           {relativeTime(a.occurredAt, now)}
                         </p>
