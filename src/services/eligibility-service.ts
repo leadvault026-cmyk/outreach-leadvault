@@ -299,3 +299,40 @@ export async function refreshExpiredEligibility(
     );
   return n > 0 ? refreshEligibility(db, workspaceId, { kind: "expired" }, now) : 0;
 }
+
+/**
+ * Live evaluation of specific prospects with the authoritative engine, also refreshing their
+ * cached decisions. Used at launch and immediately before every send (architecture §10, §12).
+ */
+export async function evaluateProspects(
+  db: AppDatabase,
+  workspaceId: string,
+  prospectIds: readonly string[],
+  now = new Date(),
+): Promise<Map<string, EligibilityResult>> {
+  const out = new Map<string, EligibilityResult>();
+  if (!prospectIds.length) return out;
+  const policies = await loadPolicies(db, workspaceId);
+  const ids = [...new Set(prospectIds)];
+  for (let i = 0; i < ids.length; i += 1000) {
+    const page: EligibilitySubject[] = await db
+      .select(subjectColumns)
+      .from(prospects)
+      .where(
+        and(eq(prospects.workspaceId, workspaceId), inArray(prospects.id, ids.slice(i, i + 1000))),
+      );
+    const ctx = await loadSuppressionContext(
+      db,
+      workspaceId,
+      page.map((p) => p.emailNormalized).filter((e): e is string => Boolean(e)),
+      page.map((p) => p.emailDomain).filter((d): d is string => Boolean(d)),
+    );
+    const results = page.map((p) => ({
+      prospectId: p.id!,
+      result: evaluateSubject(workspaceId, p, policies, ctx, now),
+    }));
+    await writeEligibility(db, workspaceId, results, now);
+    for (const r of results) out.set(r.prospectId, r.result);
+  }
+  return out;
+}

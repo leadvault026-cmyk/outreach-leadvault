@@ -3,6 +3,7 @@ import type { AppDatabase } from "@/db/rls";
 import { suppressions } from "@/db/schema";
 import { normalizeSuppressionValue } from "@/domain/suppression";
 import { refreshEligibility, workspacesWithValue } from "./eligibility-service";
+import { haltRecipients } from "./recipient-control";
 
 export type SuppressionFilters = {
   q?: string;
@@ -124,6 +125,18 @@ export async function addWorkspaceSuppression(
     valueType: input.valueType,
     value: v.value,
   });
+  // Fan-out (architecture §18): live campaign recipients stop immediately.
+  await haltRecipients(
+    tx,
+    input.valueType === "email"
+      ? { kind: "email", workspaceId: actor.workspaceId, email: v.value }
+      : { kind: "domain", workspaceId: actor.workspaceId, domain: v.value },
+    input.reason === "UNSUBSCRIBE" ? "UNSUBSCRIBED" : "SUPPRESSED",
+    `SUPPRESSED:${input.reason}`,
+    new Date(),
+    actor.userId,
+    { cancelMessages: false },
+  );
   return { id, value: v.value, reevaluated };
 }
 
@@ -161,6 +174,16 @@ export async function addGlobalSuppression(
       );
     throw e;
   }
+  await haltRecipients(
+    system,
+    input.valueType === "email"
+      ? { kind: "email", workspaceId: null, email: v.value }
+      : { kind: "domain", workspaceId: null, domain: v.value },
+    "SUPPRESSED",
+    `SUPPRESSED:${input.reason}`,
+    new Date(),
+    actor.userId,
+  );
   let reevaluated = 0;
   for (const ws of await workspacesWithValue(system, input.valueType, v.value)) {
     reevaluated += await refreshEligibility(system, ws, {

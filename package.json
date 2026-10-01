@@ -25,7 +25,8 @@
     "supabase:stop": "npx supabase stop",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
     "db:reset": "npx supabase db reset && npm run db:migrate && npm run db:seed",
-    "start:standalone": "node scripts/start-standalone.mjs"
+    "start:standalone": "node scripts/start-standalone.mjs",
+    "worker": "tsx src/worker/main.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
