@@ -1728,6 +1728,37 @@ this document, the change is recorded here.
 **Phase 0 provider test:** **DEFERRED — PAYMENT REQUIRED.** Mission Inbox and Infraforge have no
 free tier, and no purchase is authorized in Phase 1. Running SMTP from Railway also needs Pro.
 
+## 33. Phase 2 implementation notes (2026-10-01)
+
+Phase 2 built imports, the prospect repository, eligibility, suppression, unsubscribe records and
+audiences. Departures from and refinements to this document:
+
+| # | Change | Why | Affects later phases? |
+|---|---|---|---|
+| 1 | **One eligibility engine**: `src/domain/eligibility.ts` (pure). It returns a status plus *every* applicable reason code in a stable order. The Phase 1 helper `verificationEligibility()` was removed. Decisions are cached in `prospect_outreach_state` (`eligibility`, `eligibility_reasons`, `eligibility_expires_at`) and recomputed on import, suppression add/lift, and expiry (lazy refresh before lists, audiences and the dashboard). | A single source of truth; the cache makes filtering and counting indexable. | Campaign launch (Phase 5) must re-run the engine per recipient at send time, not trust the cache. |
+| 2 | Status names stay `ELIGIBLE / NEEDS_REVIEW / INELIGIBLE / SUPPRESSED`. `NEEDS_REVIEW` is shown as **"Review required"**. | No schema churn. | No. |
+| 3 | **Jurisdictions:** no country is approved by default. Unconfigured places resolve to REVIEW (`JURISDICTION_REVIEW`), unknown countries to REVIEW (`COUNTRY_UNKNOWN`). The demo seed adds one **workspace-level, demo-only** `US-TX = allowed` policy (with a note saying it is not a legal approval), so the eligible path can be shown on fictional data. | Brief: never assume legality. | Real policies are an owner/legal decision (§30). |
+| 4 | **Email-domain class** BUSINESS / CONSUMER / UNKNOWN (`src/domain/email-domain.ts`). BUSINESS only when the email domain equals the website domain or is a subdomain of it. CONSUMER from a built-in list of webmail providers. Everything else is UNKNOWN → review. B2B-only, so CONSUMER → ineligible. | Conservative and free; no paid lookup. | A provider-based check could refine UNKNOWN later. |
+| 5 | **Uploaded CSVs are not put in Supabase Storage.** The verbatim cells of every row are stored in `prospect_import_rows.raw` (RLS-protected; `storage_path` is now nullable). Limits: 5 MB, 10,000 rows, 100 columns, 2,000 characters per cell; strict UTF-8; CSV only (no XLSX). | Private by construction, nothing public, no bucket policies to get wrong, and it is what "every row explainable" needs. | Larger files would need Storage plus background parsing (worker, Phase 5). |
+| 6 | Import lifecycle: `uploaded → mapped → ready → importing → completed / completed_with_issues / failed / cancelled`. The commit claims `ready → importing` atomically (runs once), writes in batches of 500 per transaction, and always ends in a terminal state. Every row records a **data action** (create, update, unchanged, duplicate in file, duplicate existing, invalid, skipped, error) **plus** its eligibility. | Deterministic, never ambiguous after failure. | Background execution moves to pg-boss in Phase 5. |
+| 7 | Re-imports: rows match existing prospects by normalized email, then research reference, then company + contact + domain. Blank cells never erase data. Verification is replaced only by a recognized, dated, newer result. Cosmetic differences (case, `www.`) are not updates. Matching never crosses workspaces. | Idempotent re-import. | No. |
+| 8 | Prospect create/update audit events are **aggregated** into `import.completed` (counts). Row-level provenance lives in `prospect_import_rows`. | Avoids thousands of noisy audit entries per import. | No. |
+| 9 | **Global suppressions** can be added or lifted only by platform administrators, through the privileged server path (the database still refuses user writes). Workspace suppressions: OPERATOR+ add, ADMIN+ lift. A reason is always required, and records are never deleted. | §18 plus the brief. | No. |
+| 10 | **Unsubscribes**: there is no public endpoint yet. Unsubscribe records (with their suppression) make prospects SUPPRESSED (`UNSUBSCRIBED`). The demo seed contains one. | Brief. | Phase 6 adds the signed public link. |
+| 11 | **RLS performance (migration 0004):** tenant policies now use `workspace_id IN (SELECT app.my_workspace_ids(role))` instead of a per-row `app.has_workspace_role(workspace_id, role)` call. Same rules, but evaluated once per statement. Measured at 12,000 prospects: 1.3–3.2 s → 25–100 ms per list query (`docs/PERFORMANCE.md`). | The per-row SECURITY DEFINER call cost ~0.1 ms per row. | New tenant tables must use the set-based form. |
+| 12 | Search uses a generated, stored `prospects.search_text` (lower-case company, contact, title, email, domain, city, state, type) with a `pg_trgm` GIN index. Every word must match (`LIKE`, escaped). Filters, sort and pagination are server-side and URL-driven (GET forms and links). **nuqs and TanStack Table were not added.** | Bookmarkable views that work without JavaScript; fewer dependencies. | Revisit if client-side table features are needed. |
+| 13 | Exported CSVs neutralize formula injection (a leading `= + - @`, tab or CR gets an apostrophe) and are served as `no-store` attachments. | CSV security. | No. |
+| 14 | Synthetic scale data lives in a separate local `scale-demo` workspace (`npm run db:seed:synthetic`) and is measured with `npm run perf:prospects`. | Brief: ≥10,000 prospects. | No. |
+
+**Login anomaly (Phase 1, monitored):** it recurred once during a Phase 2 E2E run (the
+isolated-user sign-in landed on the global error page). The trace shows the sign-in Server Action
+request failing at the browser network layer with `net::ERR_NETWORK_IO_SUSPENDED` (no response
+reached the server), which then surfaced as `TypeError: Failed to fetch`. The same period showed
+host-level stalls (a 12k insert took 430 s and then 15 s when repeated). Classified as an
+environment event, not an application defect. Possible hardening (not done, to avoid a
+speculative change to authentication): catch network failures in the sign-in form and show an
+inline "couldn't reach the server, try again" message instead of the global error page.
+
 ## Sources (consulted 2026-10-01)
 
 - Railway plans & resource pricing — https://docs.railway.com/reference/pricing/plans
