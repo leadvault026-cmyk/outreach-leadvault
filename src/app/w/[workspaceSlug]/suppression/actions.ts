@@ -25,7 +25,7 @@ function fieldErrors(issues: ReadonlyArray<{ path: PropertyKey[]; message: strin
 
 export async function addSuppressionAction(
   workspaceSlug: string,
-  _prev: ActionResult | null,
+  _prev: ActionResult<{ reevaluated: number }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ reevaluated: number }>> {
   const parsed = addSuppressionSchema.safeParse({
@@ -108,7 +108,7 @@ export async function addSuppressionAction(
 
 export async function liftSuppressionAction(
   workspaceSlug: string,
-  _prev: ActionResult | null,
+  _prev: ActionResult<{ reevaluated: number }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ reevaluated: number }>> {
   const parsed = liftSuppressionSchema.safeParse({

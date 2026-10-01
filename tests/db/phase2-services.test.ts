@@ -157,14 +157,12 @@ beforeAll(async () => {
     { workspaceId: WS_B, userId: U.ownerB, role: "OWNER" },
   ]);
   // Test-only policy so that ELIGIBLE is reachable in workspace A. Workspace B has none.
-  await db
-    .insert(s.jurisdictionPolicies)
-    .values({
-      scope: "workspace",
-      workspaceId: WS_A,
-      countryCode: "US",
-      outreachStatus: "allowed",
-    });
+  await db.insert(s.jurisdictionPolicies).values({
+    scope: "workspace",
+    workspaceId: WS_A,
+    countryCode: "US",
+    outreachStatus: "allowed",
+  });
 });
 
 describe("CSV import lifecycle", () => {
@@ -506,14 +504,12 @@ describe("suppression and unsubscribes drive eligibility", () => {
         source: "reply",
       })
       .returning();
-    await db
-      .insert(s.unsubscribes)
-      .values({
-        workspaceId: WS_A,
-        emailNormalized: "di@foxtrot.example",
-        method: "reply",
-        suppressionId: supp!.id,
-      });
+    await db.insert(s.unsubscribes).values({
+      workspaceId: WS_A,
+      emailNormalized: "di@foxtrot.example",
+      method: "reply",
+      suppressionId: supp!.id,
+    });
     await refreshEligibility(sys(), WS_A, {
       kind: "value",
       valueType: "email",
@@ -698,14 +694,12 @@ describe("malicious cross-workspace access (Phase 2 tables)", () => {
     expect(
       await pgErrorCode(
         runAs(U.operatorA)((tx) =>
-          tx
-            .insert(s.audienceMembers)
-            .values({
-              audienceId: bAudience!.id,
-              prospectId: aProspect!.id,
-              workspaceId: WS_B,
-              addedVia: "manual",
-            }),
+          tx.insert(s.audienceMembers).values({
+            audienceId: bAudience!.id,
+            prospectId: aProspect!.id,
+            workspaceId: WS_B,
+            addedVia: "manual",
+          }),
         ),
       ),
     ).toBe("42501");

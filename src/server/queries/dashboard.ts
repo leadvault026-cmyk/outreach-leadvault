@@ -1,12 +1,15 @@
 import "server-only";
-import { and, count, countDistinct, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, count, countDistinct, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { withUserContext } from "@/db/client";
 import {
+  audiences,
   campaignRecipients,
   campaigns,
   mailboxes,
   messageEvents,
   messages,
+  prospectImports,
+  prospectOutreachState,
   prospects,
   replies,
   replyThreads,
@@ -228,6 +231,49 @@ export async function loadDashboard(ctx: WorkspaceContext, now = new Date()) {
       .orderBy(desc(messageEvents.occurredAt))
       .limit(8);
 
+    // Prospect repository (Phase 2): cached eligibility decisions, recent imports, audiences.
+    const totalProspects = await one(
+      tx
+        .select({ n: count() })
+        .from(prospects)
+        .where(and(eq(prospects.workspaceId, ws), isNull(prospects.archivedAt))),
+    );
+    const eligibilityRows = await tx
+      .select({ e: prospectOutreachState.eligibility, n: count() })
+      .from(prospectOutreachState)
+      .where(eq(prospectOutreachState.workspaceId, ws))
+      .groupBy(prospectOutreachState.eligibility);
+    const byEligibility = Object.fromEntries(eligibilityRows.map((r) => [r.e, Number(r.n)]));
+    const recentImports = await tx
+      .select({
+        id: prospectImports.id,
+        label: prospectImports.sourceLabel,
+        fileName: prospectImports.fileName,
+        status: prospectImports.status,
+        createdAt: prospectImports.createdAt,
+        created: prospectImports.createdCount,
+        updated: prospectImports.updatedCount,
+      })
+      .from(prospectImports)
+      .where(eq(prospectImports.workspaceId, ws))
+      .orderBy(desc(prospectImports.createdAt))
+      .limit(4);
+    const audienceCount = await one(
+      tx
+        .select({ n: count() })
+        .from(audiences)
+        .where(and(eq(audiences.workspaceId, ws), isNull(audiences.archivedAt))),
+    );
+    const repository = {
+      totalProspects,
+      eligible: byEligibility.ELIGIBLE ?? 0,
+      review: byEligibility.NEEDS_REVIEW ?? 0,
+      ineligible: byEligibility.INELIGIBLE ?? 0,
+      suppressed: byEligibility.SUPPRESSED ?? 0,
+      audienceCount,
+      recentImports,
+    };
+
     // Continuous 14-day series in the workspace time zone.
     const fmt = new Intl.DateTimeFormat("en-CA", {
       timeZone: tz,
@@ -243,6 +289,7 @@ export async function loadDashboard(ctx: WorkspaceContext, now = new Date()) {
     });
 
     return {
+      repository,
       kpis,
       series,
       recentCampaigns,

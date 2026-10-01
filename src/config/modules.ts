@@ -1,17 +1,9 @@
 /**
- * Copy for modules whose functionality arrives in later phases. Each page explains what the
+ * Copy for modules whose functionality arrives in later phases (Prospects, Audiences, Imports and
+ * Suppression became real modules in Phase 2). Each page explains what the
  * module does and what the operator will be able to do — no dead ends, no "coming soon".
  */
-export type ModuleKey =
-  | "prospects"
-  | "audiences"
-  | "imports"
-  | "campaigns"
-  | "inbox"
-  | "templates"
-  | "mailboxes"
-  | "suppression"
-  | "analytics";
+export type ModuleKey = "campaigns" | "inbox" | "templates" | "mailboxes" | "analytics";
 
 export type ModuleInfo = {
   title: string;
@@ -25,59 +17,6 @@ export type ModuleInfo = {
 };
 
 export const MODULES: Record<ModuleKey, ModuleInfo> = {
-  prospects: {
-    title: "Prospects",
-    summary:
-      "Approved prospect intelligence from LeadVault research, with each record's campaign eligibility and the reasons behind it.",
-    emptyTitle: "No prospects imported yet",
-    emptyDescription:
-      "Prospects arrive through CSV imports of approved research. Each record keeps its research data separate from its outreach state.",
-    primaryAction: "Import prospects",
-    capabilities: [
-      "Search, filter and sort by company, contact, title, location and business type",
-      "Eligibility status with plain-language reasons (eligible, needs review, ineligible, suppressed)",
-      "Email verification status carried over from LeadVault research",
-      "Prospect detail with outreach history across campaigns",
-      "Bulk selection to add prospects to audiences or campaigns",
-    ],
-    phase: "Phase 2",
-    safeguards: [
-      "Research data is never changed by campaign activity.",
-      "Suppressed addresses can never be enrolled, whatever audience they belong to.",
-    ],
-  },
-  audiences: {
-    title: "Audiences",
-    summary:
-      "Reusable groups of prospects, such as “Texas medical providers”, used to start campaigns.",
-    emptyTitle: "No audiences created",
-    emptyDescription:
-      "Audiences group prospects for campaign targeting. Membership never overrides suppression or eligibility.",
-    primaryAction: "Create audience",
-    capabilities: [
-      "Build audiences from imports, filters or hand-picked prospects",
-      "See total, eligible, suppressed and needs-review counts before a campaign",
-      "Add and remove members, with full campaign history per audience",
-    ],
-    phase: "Phase 2",
-  },
-  imports: {
-    title: "Imports",
-    summary:
-      "Controlled CSV import of approved prospect intelligence: upload, map columns, validate, preview, import and review the summary.",
-    emptyTitle: "No imports yet",
-    emptyDescription:
-      "Every import produces a row-by-row record: created, updated, skipped, invalid, suppressed or duplicate. No row is ever silently discarded.",
-    primaryAction: "Start an import",
-    capabilities: [
-      "Column mapping for files that differ from the standard delivery layout",
-      "Duplicate detection within the file and against existing prospects",
-      "Preview before anything is written",
-      "Import summary with downloadable issues",
-    ],
-    phase: "Phase 2",
-    safeguards: ["A previously suppressed address is never reactivated by a re-import."],
-  },
   campaigns: {
     title: "Campaigns",
     summary:
@@ -141,21 +80,6 @@ export const MODULES: Record<ModuleKey, ModuleInfo> = {
       "Automatic pause when bounce or block rates exceed safe thresholds",
     ],
     phase: "Phase 4",
-  },
-  suppression: {
-    title: "Suppression",
-    summary:
-      "The durable do-not-contact list: unsubscribes, hard bounces, manual entries and compliance holds, for this workspace and LeadVault-wide.",
-    emptyTitle: "No suppression records",
-    emptyDescription:
-      "Suppressed addresses and domains are checked again before every single send. Records are never deleted, only lifted with a reason.",
-    primaryAction: "Add suppression",
-    capabilities: [
-      "Workspace and global (LeadVault-wide) suppression scopes",
-      "Email or whole-domain entries with reason and source",
-      "Lift with reason and audit trail (Admins only)",
-    ],
-    phase: "Phase 2 (list) · Phase 6 (automatic enforcement)",
   },
   analytics: {
     title: "Analytics",

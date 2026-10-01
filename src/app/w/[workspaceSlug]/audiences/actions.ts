@@ -25,7 +25,7 @@ function fields(formData: FormData) {
 
 export async function createAudienceAction(
   workspaceSlug: string,
-  _prev: ActionResult | null,
+  _prev: ActionResult<{ id: string }> | null,
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
   const input = fields(formData);

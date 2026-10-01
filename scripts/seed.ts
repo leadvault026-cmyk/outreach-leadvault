@@ -13,6 +13,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as s from "../src/db/schema";
 import { uuidv7 } from "../src/lib/ids";
+import { refreshEligibility } from "../src/services/eligibility-service";
 
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
@@ -363,17 +364,7 @@ async function main() {
           researchSourceRef: `DEMO-${region}-${1000 + i}`,
           researchApprovedAt: new Date(now - 30 * DAY),
         });
-        await tx.insert(s.prospectOutreachState).values({
-          prospectId: id,
-          workspaceId: ws,
-          eligibility: "NEEDS_REVIEW",
-          // No jurisdiction is configured yet, so every prospect resolves to REVIEW (fail closed).
-          eligibilityReasons:
-            status === "VERIFIED"
-              ? ["JURISDICTION_REVIEW"]
-              : ["JURISDICTION_REVIEW", "EMAIL_UNVERIFIED"],
-          eligibilityCheckedAt: new Date(now - DAY),
-        });
+        // Eligibility is computed after seeding by the single engine (refreshEligibility).
         rows.push({ id, email, first, last, company });
       }
       return rows;
@@ -743,7 +734,77 @@ async function main() {
       createdBy: userIds.isolated,
     });
     void prospectsB;
+
+    // ── Phase 2 demo compliance data ──
+    // DEMO ONLY: a workspace-level "allowed" policy for Texas so the eligible path can be shown on
+    // fictional data. It is NOT a legal approval of any jurisdiction; Georgia (US-GA) and every
+    // other place stays unconfigured and therefore resolves to REVIEW.
+    await tx.insert(s.jurisdictionPolicies).values({
+      scope: "workspace",
+      workspaceId: wsA,
+      countryCode: "US",
+      regionCode: "US-TX",
+      outreachStatus: "allowed",
+      notes:
+        "DEMO ONLY — fictional local data. Not a legal approval. Real policies are an owner decision.",
+      updatedBy: userIds.owner,
+    });
+    // An unsubscribe (manual record; no public endpoint exists yet) with its suppression.
+    const unsubscribed = prospectsTx[2]!;
+    const [unsubSup] = await tx
+      .insert(s.suppressions)
+      .values({
+        scope: "workspace",
+        workspaceId: wsA,
+        valueType: "email",
+        valueNormalized: unsubscribed.email,
+        reason: "UNSUBSCRIBE",
+        source: "manual",
+        note: "Demo: asked to be removed (recorded manually)",
+        createdBy: userIds.operator,
+      })
+      .returning({ id: s.suppressions.id });
+    await tx.insert(s.unsubscribes).values({
+      workspaceId: wsA,
+      emailNormalized: unsubscribed.email,
+      method: "manual",
+      suppressionId: unsubSup!.id,
+      occurredAt: new Date(now - 3 * DAY),
+    });
+    // A workspace domain suppression covering one Georgia practice.
+    await tx.insert(s.suppressions).values({
+      scope: "workspace",
+      workspaceId: wsA,
+      valueType: "domain",
+      valueNormalized: prospectsGa[0]!.email.split("@")[1]!,
+      reason: "MANUAL_DO_NOT_CONTACT",
+      source: "manual",
+      note: "Demo: practice asked not to be contacted",
+      createdBy: userIds.admin,
+    });
+    // A lifted suppression, to show that history is kept.
+    await tx.insert(s.suppressions).values({
+      scope: "workspace",
+      workspaceId: wsA,
+      valueType: "email",
+      valueNormalized: prospectsTx[3]!.email,
+      reason: "MANUAL_DO_NOT_CONTACT",
+      source: "manual",
+      note: "Demo: added by mistake",
+      createdBy: userIds.operator,
+      createdAt: new Date(now - 10 * DAY),
+      liftedAt: new Date(now - 9 * DAY),
+      liftedBy: userIds.admin,
+      liftReason: "Demo: added to the wrong record, confirmed with the client.",
+    });
   });
+
+  // Every demo prospect gets its decision from the authoritative eligibility engine.
+  const demo = await db
+    .select({ id: s.workspaces.id })
+    .from(s.workspaces)
+    .where(eq(s.workspaces.isDemo, true));
+  for (const w of demo) await refreshEligibility(db, w.id, { kind: "all" });
 
   console.log("Demo data seeded (fictional, local only).");
   console.log("Demo accounts (password = SEED_DEMO_PASSWORD from .env.local):");

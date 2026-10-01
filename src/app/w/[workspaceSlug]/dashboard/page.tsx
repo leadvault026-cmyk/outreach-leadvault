@@ -1,5 +1,10 @@
 import {
   AlertTriangle,
+  Ban,
+  CircleCheck,
+  ClipboardList,
+  ListChecks,
+  Upload,
   CalendarClock,
   CheckCircle2,
   Mail,
@@ -18,9 +23,12 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/states/empty-state";
 import { InlineAlert } from "@/components/states/inline-alert";
 import { DemoBadge, StatusBadge } from "@/components/status-badge";
+import { IMPORT_STATUS } from "@/components/imports/import-labels";
+import { systemDb } from "@/db/client";
 import { percent, relativeTime } from "@/lib/format";
 import { getPageContext } from "@/server/page-context";
 import { loadDashboard } from "@/server/queries/dashboard";
+import { refreshExpiredEligibility } from "@/services/eligibility-service";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -41,10 +49,11 @@ export default async function DashboardPage({
   const ctx = await getPageContext(params);
   if (!ctx) return null;
   const sp = await searchParams;
+  await refreshExpiredEligibility(systemDb(), ctx.workspace.id);
   const data = await loadDashboard(ctx);
   const now = new Date();
   const slug = ctx.workspace.slug;
-  const { kpis, attention } = data;
+  const { kpis, attention, repository: repo } = data;
   const attentionCount =
     attention.pausedCampaigns.length +
     attention.mailboxesNeedingAttention.length +
@@ -55,7 +64,7 @@ export default async function DashboardPage({
       <PageHeader
         title="Dashboard"
         badge={ctx.workspace.isDemo ? <DemoBadge /> : null}
-        description="Campaign activity, replies and mailbox health for this workspace. Figures cover the last 30 days unless noted."
+        description="Prospects, eligibility, campaign activity, replies and mailbox health for this workspace. Campaign figures cover the last 30 days unless noted."
       />
 
       {sp.password_updated ? (
@@ -64,6 +73,98 @@ export default async function DashboardPage({
         </InlineAlert>
       ) : null}
 
+      <section aria-labelledby="repo-heading" className="mb-6 space-y-3">
+        <h2 id="repo-heading" className="text-sm font-semibold">
+          Prospects
+        </h2>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 xl:grid-cols-6">
+          <KpiTile
+            label="Total prospects"
+            value={repo.totalProspects}
+            icon={Users}
+            href={`/w/${slug}/prospects`}
+          />
+          <KpiTile
+            label="Eligible"
+            value={repo.eligible}
+            hint="Pass every rule"
+            icon={CircleCheck}
+            href={`/w/${slug}/prospects?eligibility=ELIGIBLE`}
+          />
+          <KpiTile
+            label="Review required"
+            value={repo.review}
+            hint="Need a human check"
+            icon={ClipboardList}
+            href={`/w/${slug}/prospects?eligibility=NEEDS_REVIEW`}
+          />
+          <KpiTile
+            label="Suppressed"
+            value={repo.suppressed}
+            hint="Never contacted"
+            icon={Ban}
+            href={`/w/${slug}/prospects?eligibility=SUPPRESSED`}
+          />
+          <KpiTile
+            label="Audiences"
+            value={repo.audienceCount}
+            icon={ListChecks}
+            href={`/w/${slug}/audiences`}
+          />
+          <KpiTile
+            label="Ineligible"
+            value={repo.ineligible}
+            hint="Blocked by a rule"
+            icon={MailX}
+            href={`/w/${slug}/prospects?eligibility=INELIGIBLE`}
+          />
+        </div>
+        <Panel
+          title="Recent imports"
+          action={
+            <Link
+              href={`/w/${slug}/imports`}
+              className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+            >
+              All imports
+            </Link>
+          }
+        >
+          {repo.recentImports.length === 0 ? (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Upload aria-hidden className="size-4" /> No imports yet.
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {repo.recentImports.map((i) => {
+                const st = IMPORT_STATUS[i.status];
+                return (
+                  <li
+                    key={i.id}
+                    className="flex flex-wrap items-center justify-between gap-2 py-2.5 first:pt-0 last:pb-0"
+                  >
+                    <div className="min-w-0">
+                      <Link
+                        href={`/w/${slug}/imports/${i.id}`}
+                        className="block truncate text-sm font-medium hover:underline"
+                      >
+                        {i.label ?? i.fileName}
+                      </Link>
+                      <p className="tabular text-xs text-muted-foreground">
+                        {i.created.toLocaleString()} created · {i.updated.toLocaleString()} updated
+                        · {relativeTime(i.createdAt, now)}
+                      </p>
+                    </div>
+                    <StatusBadge status={i.status} label={st?.label} tone={st?.tone} />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Panel>
+      </section>
+
+      <h2 className="mb-3 text-sm font-semibold">Campaigns</h2>
       {!data.hasAnyData ? (
         <EmptyState
           icon={Megaphone}
