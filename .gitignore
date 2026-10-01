@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+/e2e/.auth
+
+# next.js
+/.next/
+/out/
+/build
+
+# misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# debug
+npm-debug.log*
+
+# env files — never commit secrets. Only the names-only template is tracked.
+.env*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# supabase local runtime state
+/supabase/.branches
+/supabase/.temp
+/supabase/signing_keys.json
