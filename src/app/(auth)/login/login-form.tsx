@@ -7,6 +7,24 @@ import { InlineAlert } from "@/components/states/inline-alert";
 import { Button } from "@/components/ui/button";
 import { signInAction, type FormState } from "../actions";
 
+export const NETWORK_ERROR_MESSAGE =
+  "Couldn't reach the server. Check your connection and try again.";
+
+/**
+ * When the request never reaches the server (offline, network suspended), the action call rejects
+ * with a fetch TypeError. Show that inline instead of the global error page. Everything else —
+ * including the successful sign-in redirect — passes through unchanged.
+ */
+async function signInWithNetworkGuard(prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    return await signInAction(prev, formData);
+  } catch (error) {
+    if (error instanceof TypeError && /fetch|network|load failed/i.test(error.message))
+      return { status: "error", message: NETWORK_ERROR_MESSAGE };
+    throw error;
+  }
+}
+
 export function LoginForm({
   next,
   notice,
@@ -16,7 +34,7 @@ export function LoginForm({
   notice?: string;
   noticeTone: "info" | "warning";
 }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(signInAction, {
+  const [state, action, pending] = useActionState<FormState, FormData>(signInWithNetworkGuard, {
     status: "idle",
   });
 

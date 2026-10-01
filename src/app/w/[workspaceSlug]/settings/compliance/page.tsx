@@ -24,6 +24,14 @@ export default async function CompliancePage({
         description="Jurisdiction policies decide where outreach may be sent, and what each email must include. LeadVault Outreach is not limited to one country: every prospect carries a country and, where known, a region."
       />
       <div className="max-w-4xl space-y-6">
+        {ctx.workspace.isDemo && allowedCount > 0 ? (
+          <InlineAlert tone="warning" title="Demo-only approval — not a legal approval">
+            This is a demo workspace with fictional data. Its “Allowed” policy exists only so the
+            complete campaign flow can be demonstrated with the fake email transport. It is not a
+            legal approval of any jurisdiction, and demo workspaces can never use a live email
+            transport. Real policies are an owner decision with legal counsel.
+          </InlineAlert>
+        ) : null}
         <InlineAlert tone="info" title="Fail-closed by default">
           A country or region with no policy, or a prospect with no country, resolves to{" "}
           <strong>Review</strong> and is held from sending. Only an explicit{" "}

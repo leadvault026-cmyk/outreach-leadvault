@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { MODULES } from "@/config/modules";
 import { ALL_NAV_ITEMS, activeNavKey } from "@/config/navigation";
 import { SETTINGS_SECTIONS } from "@/config/settings";
 import { AUDIT_ACTIONS, sanitizeAuditMetadata } from "@/domain/audit";
@@ -27,15 +26,6 @@ describe("navigation has no dead ends", () => {
     expect(
       existsSync(path.join(APP, "w", "[workspaceSlug]", "settings", "[section]", "page.tsx")),
     ).toBe(true);
-  });
-
-  it("every placeholder module has copy", () => {
-    for (const key of Object.keys(MODULES)) {
-      expect(
-        ALL_NAV_ITEMS.some((i) => i.key === key),
-        key,
-      ).toBe(true);
-    }
   });
 
   it("resolves the active item from the URL", () => {

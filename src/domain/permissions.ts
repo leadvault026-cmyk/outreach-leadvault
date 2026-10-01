@@ -16,6 +16,7 @@ export const CAPABILITIES = {
   "inbox.classify": "OPERATOR",
   "suppression.add": "OPERATOR",
   "suppression.lift": "ADMIN",
+  "sends.resolve": "ADMIN",
   "customFields.manage": "ADMIN",
   "mailboxes.manage": "ADMIN",
   "compliance.manage": "ADMIN",

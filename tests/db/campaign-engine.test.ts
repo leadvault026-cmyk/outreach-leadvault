@@ -110,16 +110,14 @@ async function audienceOf(ids: string[]) {
     .values({ workspaceId: WS, name: `Audience ${uuidv7()}`, createdBy: U.operator })
     .returning();
   if (ids.length)
-    await db
-      .insert(s.audienceMembers)
-      .values(
-        ids.map((prospectId) => ({
-          audienceId: a!.id,
-          prospectId,
-          workspaceId: WS,
-          addedVia: "manual" as const,
-        })),
-      );
+    await db.insert(s.audienceMembers).values(
+      ids.map((prospectId) => ({
+        audienceId: a!.id,
+        prospectId,
+        workspaceId: WS,
+        addedVia: "manual" as const,
+      })),
+    );
   return a!.id;
 }
 

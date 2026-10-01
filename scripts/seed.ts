@@ -221,6 +221,8 @@ async function main() {
         kind: "client",
         defaultTimezone: "America/Chicago",
         senderCountryCode: "US",
+        compliancePostalAddress:
+          "Northwind Clinics (demo), 100 Example Avenue, Austin, TX 78701, USA — fictional",
         isDemo: true,
         createdBy: userIds.owner,
       },
@@ -231,6 +233,8 @@ async function main() {
         kind: "client",
         defaultTimezone: "Europe/London",
         senderCountryCode: "GB",
+        compliancePostalAddress:
+          "Harbor Dental Group (demo), 1 Example Quay, Bristol BS1 0AA, UK — fictional",
         isDemo: true,
         createdBy: userIds.owner,
       },
@@ -278,7 +282,9 @@ async function main() {
           displayName: b.name,
           status: b.status,
           statusReason: b.reason ?? null,
-          dailySendLimit: 30,
+          dailySendLimit: 50,
+          // Short spacing so the fake-transport demo progresses quickly (real mailboxes: 90s+).
+          minSecondsBetweenSends: 5,
           timezone: "America/Chicago",
           infraVendor: "demo",
           warmupStatus: "ready",
@@ -297,7 +303,7 @@ async function main() {
       }
       return out;
     }
-    const boxesA = await infra(wsA, "northwind-outreach.example", [
+    await infra(wsA, "northwind-outreach.example", [
       { local: "alex", name: "Alex Romero", status: "CONNECTED" },
       { local: "taylor", name: "Taylor Webb", status: "CONNECTED" },
       {
@@ -307,7 +313,7 @@ async function main() {
         reason: "Hard-bounce rate above 2% — auto-paused (demo)",
       },
     ]);
-    const boxesB = await infra(wsB, "harbor-outreach.example", [
+    await infra(wsB, "harbor-outreach.example", [
       { local: "lee", name: "Lee Morgan", status: "CONNECTED" },
     ]);
 
@@ -409,320 +415,48 @@ async function main() {
       })),
     ]);
 
-    await tx.insert(s.templates).values({
-      workspaceId: wsA,
-      name: "Practice operations intro",
-      subject: "Quick question about {{company_name}}",
-      body: "Hi {{first_name}},\n\nI noticed {{company_name}} in {{city}} …\n\n{{sender_name}}",
-      variablesUsed: ["first_name", "company_name", "city", "sender_name"],
-      createdBy: userIds.operator,
-    });
-
-    // ── Campaigns, steps, recipients, messages, events, replies ──
-    type CampaignSpec = {
-      name: string;
-      status: "ACTIVE" | "PAUSED" | "DRAFT";
-      audience: string | null;
-      mailbox: (typeof boxesA)[number];
-      prospects: typeof prospectsTx;
-      pauseReason?: string;
-      launchedDaysAgo?: number;
-    };
-    const specs: CampaignSpec[] = [
+    // ── Templates for a 3-step sequence (fictional copy) ──
+    await tx.insert(s.templates).values([
       {
-        name: "Texas Medical Providers — Q4",
-        status: "ACTIVE",
-        audience: audTx,
-        mailbox: boxesA[0]!,
-        prospects: prospectsTx.slice(0, 26),
-        launchedDaysAgo: 13,
-      },
-      {
-        name: "Georgia Healthcare Prospects",
-        status: "ACTIVE",
-        audience: audGa,
-        mailbox: boxesA[1]!,
-        prospects: prospectsGa.slice(0, 18),
-        launchedDaysAgo: 9,
-      },
-      {
-        name: "Houston Specialty Clinics",
-        status: "PAUSED",
-        audience: audTx,
-        mailbox: boxesA[2]!,
-        prospects: prospectsTx.slice(26, 34),
-        pauseReason: "Sending mailbox needs attention (demo)",
-        launchedDaysAgo: 6,
-      },
-      {
-        name: "Dental Groups — Pilot",
-        status: "DRAFT",
-        audience: null,
-        mailbox: boxesA[0]!,
-        prospects: [],
-      },
-    ];
-
-    const classifications = [
-      "INTERESTED",
-      "INTERESTED",
-      "NOT_INTERESTED",
-      "FOLLOW_UP",
-      "UNREVIEWED",
-      "UNREVIEWED",
-      "OUT_OF_OFFICE",
-    ] as const;
-    const snippets: Record<string, string> = {
-      INTERESTED:
-        "Thanks for reaching out — happy to take a look. Could you send over a few times next week?",
-      NOT_INTERESTED: "We're all set for now, thank you.",
-      FOLLOW_UP: "Not a good time this month. Please check back with me in January.",
-      UNREVIEWED: "Who would I talk to about pricing for a practice our size?",
-      OUT_OF_OFFICE: "I'm out of the office until Monday with limited access to email.",
-    };
-    let bounceBudget = 2;
-    let reviewBudget = 1;
-
-    for (const spec of specs) {
-      const campaignId = uuidv7();
-      const launchedAt = spec.launchedDaysAgo ? new Date(now - spec.launchedDaysAgo * DAY) : null;
-      await tx.insert(s.campaigns).values({
-        id: campaignId,
         workspaceId: wsA,
-        name: spec.name,
-        description: "Demo campaign — fictional recipients",
-        objective: "Book introductory calls",
-        status: spec.status,
-        audienceId: spec.audience,
-        mailboxId: spec.mailbox.id,
-        sendingIdentityId: spec.mailbox.identityId,
-        timezone: "America/Chicago",
-        sendDays: [1, 2, 3, 4, 5],
-        windowStart: "08:00",
-        windowEnd: "17:00",
-        dailyLimit: 25,
-        minSecondsBetweenSends: 120,
-        targetCountryCodes: ["US"],
-        launchedAt,
-        launchedBy: launchedAt ? userIds.operator : null,
-        pausedAt: spec.status === "PAUSED" ? new Date(now - DAY) : null,
-        pauseReason: spec.pauseReason ?? null,
+        name: "1 · Introduction",
+        subject: "Quick question for {{company_name}}",
+        body: `Hi {{first_name|there}},
+
+I work with independent practices like {{company_name}} in {{city|your area}} on front-desk scheduling. Would a short call next week be useful?
+
+Best,
+{{sender_name}}`,
+        variablesUsed: ["first_name", "company_name", "city", "sender_name"],
         createdBy: userIds.operator,
-      });
-      const steps = [1, 2, 3].map((n) => ({
-        id: uuidv7(),
+      },
+      {
         workspaceId: wsA,
-        campaignId,
-        stepNumber: n,
-        delayMinutes: n === 1 ? 0 : 3 * 24 * 60,
-        threadMode: n === 1 ? ("new" as const) : ("reply" as const),
-        subject: n === 1 ? "Quick question about {{company_name}}" : null,
-        body: n === 1 ? "Hi {{first_name}}, …" : "Hi {{first_name}}, following up on my note …",
-      }));
-      await tx.insert(s.sequenceSteps).values(steps);
-      if (!launchedAt) continue;
+        name: "2 · Follow-up",
+        subject: "Following up",
+        body: `Hi {{first_name|there}},
 
-      for (const p of spec.prospects) {
-        const recipientId = uuidv7();
-        const firstSend = new Date(
-          launchedAt.getTime() +
-            int(0, Math.max(1, spec.launchedDaysAgo! - 1)) * DAY +
-            int(1, 8) * 3_600_000,
-        );
-        if (firstSend.getTime() > now) continue;
-        const willBounce = bounceBudget > 0 && rand() < 0.08;
-        const replies = !willBounce && rand() < 0.22;
-        const secondSend = new Date(firstSend.getTime() + 3 * DAY);
-        const sendSecond = !willBounce && !replies && secondSend.getTime() < now;
-        const needsReview =
-          !willBounce && !replies && !sendSecond && reviewBudget > 0 && rand() < 0.2;
+Just bringing this back to the top of your inbox. Happy to send a one-page overview instead of a call.
 
-        const status = willBounce
-          ? "BOUNCED"
-          : replies
-            ? "REPLIED"
-            : spec.status === "PAUSED"
-              ? "SCHEDULED"
-              : "SCHEDULED";
-        const lastSent = sendSecond ? 2 : 1;
-        await tx.insert(s.campaignRecipients).values({
-          id: recipientId,
-          workspaceId: wsA,
-          campaignId,
-          prospectId: p.id,
-          emailNormalized: p.email,
-          status: needsReview ? "SENDING" : status,
-          lastSentStep: needsReview ? 1 : lastSent,
-          nextStep: status === "SCHEDULED" && !needsReview ? lastSent + 1 : null,
-          nextSendAt:
-            status === "SCHEDULED" && !needsReview
-              ? new Date(
-                  Math.max(now + DAY, (sendSecond ? secondSend : firstSend).getTime() + 3 * DAY),
-                )
-              : null,
-          stopReason: willBounce ? "HARD_BOUNCE" : replies ? "REPLIED" : null,
-          enrolledAt: launchedAt,
-          enrolledBy: userIds.operator,
-          lastSentAt: sendSecond ? secondSend : firstSend,
-        });
+{{sender_name}}`,
+        variablesUsed: ["first_name", "sender_name"],
+        createdBy: userIds.operator,
+      },
+      {
+        workspaceId: wsA,
+        name: "3 · Final note",
+        subject: "Closing the loop",
+        body: `Hi {{first_name|there}},
 
-        const sendMessage = async (
-          step: (typeof steps)[number],
-          at: Date,
-          msgStatus: "SENT" | "OPERATOR_REVIEW",
-        ) => {
-          const id = uuidv7();
-          await tx.insert(s.messages).values({
-            id,
-            workspaceId: wsA,
-            kind: "sequence",
-            campaignId,
-            campaignRecipientId: recipientId,
-            sequenceStepId: step.id,
-            stepNumber: step.stepNumber,
-            prospectId: p.id,
-            mailboxId: spec.mailbox.id,
-            sendingIdentityId: spec.mailbox.identityId,
-            toEmail: p.email,
-            fromEmail: spec.mailbox.email,
-            fromName: spec.mailbox.name,
-            subject:
-              step.stepNumber === 1
-                ? `Quick question about ${p.company}`
-                : `Re: Quick question about ${p.company}`,
-            bodyText: `Hi ${p.first}, … (demo content)`,
-            rfcMessageId: `<${id}@northwind-outreach.example>`,
-            lvMessageHeader: id,
-            status: msgStatus,
-            scheduledFor: at,
-            attemptCount: 1,
-            sentAt: msgStatus === "SENT" ? at : null,
-            providerMessageId: msgStatus === "SENT" ? `demo-${id}` : null,
-            errorCode: msgStatus === "OPERATOR_REVIEW" ? "TIMEOUT" : null,
-            errorMessage:
-              msgStatus === "OPERATOR_REVIEW" ? "The mail provider did not respond in time." : null,
-            reconciliationChecks: msgStatus === "OPERATOR_REVIEW" ? 4 : 0,
-          });
-          if (msgStatus === "SENT") {
-            await tx.insert(s.messageEvents).values({
-              workspaceId: wsA,
-              messageId: id,
-              campaignRecipientId: recipientId,
-              eventType: "sent",
-              occurredAt: at,
-              source: "system",
-              dedupeKey: `sent:${id}`,
-            });
-          }
-          return id;
-        };
+I won't keep following up. If scheduling ever becomes a priority for {{company_name}}, just reply to this email.
 
-        if (needsReview) {
-          reviewBudget--;
-          await sendMessage(steps[0]!, firstSend, "OPERATOR_REVIEW");
-          continue;
-        }
-        const firstId = await sendMessage(steps[0]!, firstSend, "SENT");
-        if (sendSecond) await sendMessage(steps[1]!, secondSend, "SENT");
-
-        if (willBounce) {
-          bounceBudget--;
-          const at = new Date(firstSend.getTime() + 10 * 60_000);
-          await tx
-            .update(s.messages)
-            .set({ bouncedAt: at, bounceType: "hard" })
-            .where(eq(s.messages.id, firstId));
-          await tx.insert(s.messageEvents).values({
-            workspaceId: wsA,
-            messageId: firstId,
-            campaignRecipientId: recipientId,
-            eventType: "hard_bounce",
-            occurredAt: at,
-            source: "mailbox_sync",
-            dedupeKey: `hard_bounce:${firstId}:demo`,
-            data: { status: "5.1.1" },
-          });
-          await tx.insert(s.suppressions).values({
-            scope: "global",
-            valueType: "email",
-            valueNormalized: p.email,
-            reason: "HARD_BOUNCE",
-            source: "bounce",
-            sourceMessageId: firstId,
-            sourceCampaignId: campaignId,
-            note: "Demo hard bounce (5.1.1)",
-          });
-        }
-
-        if (replies) {
-          const cls = pick(classifications);
-          const receivedAt = new Date(firstSend.getTime() + int(2, 40) * 3_600_000);
-          if (receivedAt.getTime() > now) continue;
-          const threadId = uuidv7();
-          await tx.insert(s.replyThreads).values({
-            id: threadId,
-            workspaceId: wsA,
-            mailboxId: spec.mailbox.id,
-            providerThreadId: `demo-thread-${threadId}`,
-            campaignId,
-            campaignRecipientId: recipientId,
-            prospectId: p.id,
-            subject: `Re: Quick question about ${p.company}`,
-            classification: cls,
-            classifiedBy: cls === "UNREVIEWED" ? null : userIds.operator,
-            classifiedAt: cls === "UNREVIEWED" ? null : receivedAt,
-            isUnread: cls === "UNREVIEWED",
-            lastMessageAt: receivedAt,
-          });
-          const replyId = uuidv7();
-          await tx.insert(s.replies).values({
-            id: replyId,
-            workspaceId: wsA,
-            mailboxId: spec.mailbox.id,
-            replyThreadId: threadId,
-            providerMessageId: `demo-in-${replyId}`,
-            rfcMessageId: `<${replyId}@${p.email.split("@")[1]}>`,
-            inReplyTo: `<${firstId}@northwind-outreach.example>`,
-            fromEmail: p.email,
-            fromName: `${p.first} ${p.last}`,
-            toEmails: [spec.mailbox.email],
-            subject: `Re: Quick question about ${p.company}`,
-            snippet: snippets[cls],
-            bodyText: snippets[cls],
-            receivedAt,
-            kind: cls === "OUT_OF_OFFICE" ? "auto_reply" : "human_reply",
-            matchedMessageId: firstId,
-            matchMethod: "in_reply_to",
-            processedAt: receivedAt,
-          });
-          await tx.insert(s.messageEvents).values({
-            workspaceId: wsA,
-            messageId: firstId,
-            campaignRecipientId: recipientId,
-            eventType: cls === "OUT_OF_OFFICE" ? "auto_replied" : "replied",
-            occurredAt: receivedAt,
-            source: "mailbox_sync",
-            dedupeKey: `reply:${replyId}`,
-          });
-          await tx
-            .update(s.campaignRecipients)
-            .set({ repliedAt: receivedAt })
-            .where(eq(s.campaignRecipients.id, recipientId));
-        }
-      }
-    }
-
-    // Workspace B: a small, separate dataset used to demonstrate isolation.
-    const campaignB = uuidv7();
-    await tx.insert(s.campaigns).values({
-      id: campaignB,
-      workspaceId: wsB,
-      name: "Bristol Dental Practices",
-      status: "DRAFT",
-      mailboxId: boxesB[0]!.id,
-      sendingIdentityId: boxesB[0]!.identityId,
-      createdBy: userIds.isolated,
-    });
+{{sender_name}}`,
+        variablesUsed: ["first_name", "company_name", "sender_name"],
+        createdBy: userIds.operator,
+      },
+    ]);
+    // No campaign history is fabricated: campaigns, sends, replies and bounces in the demo are
+    // produced by the real pipeline (fake email transport) when the owner runs the walkthrough.
     await tx.insert(s.suppressions).values({
       scope: "workspace",
       workspaceId: wsB,

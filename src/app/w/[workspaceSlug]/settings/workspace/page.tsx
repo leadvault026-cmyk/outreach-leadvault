@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 import { DefinitionList, NotSet } from "@/components/settings/definition-list";
+import { PostalAddressForm } from "@/components/settings/postal-address-form";
 import { InlineAlert } from "@/components/states/inline-alert";
 import { StatusBadge } from "@/components/status-badge";
 import { can } from "@/domain/permissions";
@@ -27,7 +28,8 @@ export default async function WorkspaceSettingsPage({
       <div className="max-w-3xl space-y-4">
         {!ws.compliancePostalAddress ? (
           <InlineAlert tone="warning" title="Compliance postal address not set">
-            Campaigns to jurisdictions that require a postal address cannot launch until one is set.
+            Campaigns cannot launch until a postal address is set: it is printed in every email
+            footer.
           </InlineAlert>
         ) : null}
         <DefinitionList
@@ -55,11 +57,16 @@ export default async function WorkspaceSettingsPage({
             { term: "Created", value: formatDateTime(ws.createdAt, ws.defaultTimezone) },
           ]}
         />
-        <p className="text-[13px] text-muted-foreground">
-          {can(ctx.role, "workspace.settings")
-            ? "Editing workspace details becomes available with workspace administration in a later phase."
-            : "Only workspace Owners can change these settings."}
-        </p>
+        {can(ctx.role, "workspace.settings") ? (
+          <PostalAddressForm
+            workspaceSlug={ctx.workspace.slug}
+            current={ws.compliancePostalAddress}
+          />
+        ) : (
+          <p className="text-[13px] text-muted-foreground">
+            Only workspace Owners can change these settings.
+          </p>
+        )}
       </div>
     </>
   );

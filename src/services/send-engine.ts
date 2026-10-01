@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, lte, sql } from "drizzle-orm";
 import type { AppDatabase } from "@/db/rls";
 import {
   campaignRecipients,

@@ -34,6 +34,7 @@ export const AUDIT_ACTIONS = {
   bounceRecorded: "bounce.recorded",
   unsubscribeRecorded: "unsubscribe.recorded",
   simulationRun: "simulation.run",
+  workspaceUpdated: "workspace.updated",
 } as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];
 
@@ -109,4 +110,5 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "bounce.recorded": "Bounce recorded",
   "unsubscribe.recorded": "Unsubscribe recorded",
   "simulation.run": "Test event simulated (fake transport)",
+  "workspace.updated": "Workspace settings changed",
 };

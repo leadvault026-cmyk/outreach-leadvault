@@ -12,7 +12,15 @@ import { NextResponse, type NextRequest } from "next/server";
  * session and workspace membership server-side (architecture §7, layer 1 vs layer 2).
  */
 
-const PUBLIC_PATHS = [/^\/login$/, /^\/forgot-password$/, /^\/auth\/confirm$/, /^\/api\/health$/];
+const PUBLIC_PATHS = [
+  /^\/login$/,
+  /^\/forgot-password$/,
+  /^\/auth\/confirm$/,
+  /^\/api\/health$/,
+  // Recipient-facing unsubscribe (signed token; no login, reveals nothing about the prospect).
+  /^\/u\/[A-Za-z0-9._-]{10,200}$/,
+  /^\/api\/unsubscribe\/[A-Za-z0-9._-]{10,200}$/,
+];
 const AUTH_ONLY_PATHS = [/^\/login$/, /^\/forgot-password$/];
 
 function buildCsp(nonce: string): string {

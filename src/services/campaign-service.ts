@@ -703,11 +703,23 @@ export async function campaignResults(db: AppDatabase, workspaceId: string, camp
         eq(replyThreads.classification, "INTERESTED"),
       ),
     );
+  const [contacted] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(campaignRecipients)
+    .where(
+      and(
+        eq(campaignRecipients.workspaceId, workspaceId),
+        eq(campaignRecipients.campaignId, campaignId),
+        sql`${campaignRecipients.lastSentStep} > 0`,
+      ),
+    );
   const total = byStatus.reduce((a, r) => a + r.n, 0);
   return {
     recipients: total - get("EXCLUDED"),
     excluded: get("EXCLUDED"),
     sent: m.SENT ?? 0,
+    /** Prospects who received at least one email (reply-rate denominator). */
+    contacted: contacted?.n ?? 0,
     replied: get("REPLIED"),
     positive: positive?.n ?? 0,
     bounced: get("BOUNCED"),
