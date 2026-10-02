@@ -40,6 +40,8 @@ test.describe("desktop navigation", () => {
   });
 
   test("no internal link on any page is broken", async ({ page, request }) => {
+    // The crawl visits every module's links (many more since the MVP modules), one at a time.
+    test.setTimeout(240_000);
     const toVisit = SECTIONS.map(([, s]) => `/w/${DEMO_WS}/${s}`).concat([
       `/w/${DEMO_WS}/profile`,
       `/w/${DEMO_WS}/settings/workspace`,

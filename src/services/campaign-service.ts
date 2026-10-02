@@ -50,7 +50,7 @@ export const campaignSettingsSchema = z
       .string()
       .trim()
       .max(500)
-      .optional()
+      .nullish()
       .transform((v) => v || null),
     audienceId: z.uuid("Choose an audience."),
     mailboxId: z.uuid("Choose a sending mailbox."),
@@ -174,11 +174,12 @@ export async function updateCampaignSettings(
 // ───────────────────────────── Sequence ─────────────────────────────
 
 export const stepInputSchema = z.object({
+  // nullish: parsing an already-parsed sequence must succeed (actions validate, services re-parse).
   subject: z
     .string()
     .trim()
     .max(300)
-    .optional()
+    .nullish()
     .transform((v) => v || null),
   body: z.string().trim().min(1, "Write the email text.").max(10_000),
   delayMinutes: z.coerce

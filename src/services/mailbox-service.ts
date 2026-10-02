@@ -51,7 +51,13 @@ export async function updateMailboxSettings(
   const v = mailboxSettingsSchema.parse(input);
   const rows = await tx
     .update(mailboxes)
-    .set({ ...v, updatedAt: new Date() })
+    // Re-evaluate immediately: a mailbox parked until tomorrow by its old daily limit (or while
+    // disabled) becomes available again. The executor still enforces the cap atomically per send.
+    .set({
+      ...v,
+      nextAvailableAt: sql`least(${mailboxes.nextAvailableAt}, now())`,
+      updatedAt: new Date(),
+    })
     .where(and(eq(mailboxes.workspaceId, actor.workspaceId), eq(mailboxes.id, mailboxId)))
     .returning({ id: mailboxes.id });
   return rows.length > 0;

@@ -290,7 +290,10 @@ export function ProspectTable({
                   <Reasons reasons={r.reasons} />
                 </td>
                 <td className="px-2 py-2.5 pr-4 text-xs whitespace-nowrap text-muted-foreground">
-                  {relativeTime(new Date(r.updatedAt))}
+                  {/* "5 seconds ago" can differ between server render and hydration. */}
+                  <time dateTime={new Date(r.updatedAt).toISOString()} suppressHydrationWarning>
+                    {relativeTime(new Date(r.updatedAt))}
+                  </time>
                 </td>
               </tr>
             ))}

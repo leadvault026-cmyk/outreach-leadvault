@@ -1759,6 +1759,45 @@ environment event, not an application defect. Possible hardening (not done, to a
 speculative change to authentication): catch network failures in the sign-in form and show an
 inline "couldn't reach the server, try again" message instead of the global error page.
 
+## 34. MVP completion notes (2026-10-01)
+
+The original MVP workflow is implemented end to end with a **fake email transport**: import →
+prospects → audience → campaign → linear sequence → preview → schedule → worker execution →
+reply / bounce / unsubscribe → stop rules → basic results. Real delivery needs a purchased
+provider (separate, controlled step). Refinements and departures:
+
+| # | Decision | Why |
+|---|---|---|
+| 1 | Campaign states stay as in §9 (`DRAFT, SCHEDULED, ACTIVE, PAUSED, COMPLETED, CANCELLED`), shown as Draft / Scheduled / **Running** / Paused / Completed / **Stopped**. "Ready" is not stored: the preview computes readiness (blockers) every time. | No schema churn; readiness depends on live data anyway. |
+| 2 | Enrolled recipients start as `SCHEDULED` (next step 1, `next_send_at` = start). `QUEUED` is unused. The dispatcher only takes recipients of `ACTIVE` campaigns, so a scheduled campaign's recipients simply wait. | One fewer transition to guard. |
+| 3 | The worker (`src/worker/main.ts`, `npm run worker`) runs the §13.2 loops (lifecycle, dispatcher, executor, reconciliation, heartbeat) as plain PostgreSQL polling with `FOR UPDATE SKIP LOCKED`, leases and fenced writes. **pg-boss is not added**: without a real provider there are no mailbox-sync or webhook jobs for it to schedule. | Minimum reliable infrastructure; Postgres-backed as approved. |
+| 4 | Locking queries are written in SQL with table aliases (`for update of r skip locked`). | Drizzle emits schema-qualified names in `FOR UPDATE OF`, which PostgreSQL rejects. |
+| 5 | `messages` stays engine-written (read-only for users, §7). Stops started by a user (stop campaign, add suppression) halt recipients inside the user's RLS transaction; a worker sweep then cancels any not-yet-sent message whose recipient is no longer `SENDING`, and the executor re-checks the recipient before claiming. | Keeps least-privilege grants intact. |
+| 6 | Eligibility is re-evaluated with the authoritative engine at launch, at dispatch and immediately before each send. Only `ELIGIBLE` prospects are ever sent to; review-required prospects are excluded (no operator override in the MVP). | §10, brief §10. |
+| 7 | Personalization uses existing normalized fields only (`first_name, last_name, contact_name, contact_title, company_name, provider_type, city, state, country, website, sender_name`) with `{{field|fallback}}`. Unknown tokens fail on save; a missing value without fallback excludes the prospect at launch (`MISSING_REQUIRED_VARIABLE`) and stops it at dispatch if data changed. Custom fields are not tokens in the MVP. | Never "Hi undefined". |
+| 8 | Every email gets an opt-out line with a signed link (`/u/{token}`), the List-Unsubscribe headers (RFC 8058 one-click to `/api/unsubscribe/{token}`), the policy footer and the workspace postal address. **Launch requires the postal address and the signing secret.** | §19; policies default to requiring a postal address. |
+| 9 | The sending window is the **campaign's** (days + hours in the campaign time zone; "any time" allowed for testing). The mailbox's own window columns are not enforced; mailbox daily limits and spacing are. | One clear window per campaign. |
+| 10 | Inbound processing (`ingestInbound`) is complete (classification, header matching, sender fallback, threads, stop rules, hard-bounce → global suppression, opt-out replies → unsubscribe). No mailbox sync loop runs yet, because no real mailbox exists; with the fake transport, the campaign page's **Test** menu builds realistic inbound messages and feeds them through the same pipeline. | Brief §17–§18 allow fake/test events. |
+| 11 | Ambiguous sends → `RECONCILIATION_REQUIRED` → positive evidence only (fake provider history) → otherwise `OPERATOR_REVIEW`. Admins can resolve with "It was sent" or "Stop this recipient". **There is no "retry" button.** | §12.1: never blindly retry. |
+| 12 | Safety interlocks: `SENDING_ENABLED=false` kill switch; the worker refuses the fake transport when `APP_ENV=production`; **demo workspaces can never use a live transport** (their Texas policy is demo-only and labelled as such on Settings → Compliance). | Brief §14, §24. |
+| 13 | Results show recipients, sent, replied, positive (Inbox "Interested"), bounced, unsubscribed, suppressed/stopped, remaining and excluded. Reply rate = replies ÷ prospects emailed. No "delivered" or open metrics. | Brief §22. |
+| 14 | The demo seed no longer fabricates campaign history; it provides audiences, three templates, fictional mailboxes (5 s spacing for a quick demo) and fictional postal addresses. Campaign data comes from running the real pipeline. | Dashboard shows real application data. |
+| 15 | Not implemented (outside the frozen MVP or needing a provider): live provider adapter, mailbox sync, webhooks, recipient-local send times, holiday calendars, per-IP rate limiting of the unsubscribe endpoint, replying from the app. | Scope freeze. |
+
+**Login failures — root cause found (2026-10-02).** The intermittent first-sign-in failure seen
+since Phase 1 was traced in the Supabase Auth container log to its own database connection:
+`couldn't start a new transaction … failed to connect to host=supabase_db… dial tcp …:5432: i/o
+timeout` (10.5 s), on the first sign-in after idle time on the local Docker stack, while the next
+sign-ins succeeded. Two app-side consequences were fixed without changing the authentication
+design: (1) a server-side auth failure (HTTP 5xx or no status) was reported as "The email or
+password is incorrect" — it now says "Couldn't reach the server. Check your connection and try
+again." and is logged as `auth.sign_in_unavailable`; (2) a request that never reaches the server
+(the Phase 2 `ERR_NETWORK_IO_SUSPENDED` case) now shows the same inline message instead of the
+global error page. Wrong passwords (HTTP 400) still show the generic credentials message. The E2E
+sign-in setup retries once when it sees the unavailable message. The underlying Docker
+connection timeout is a local-environment condition (small Docker VM under load); hosted
+Supabase is not affected by it.
+
 ## Sources (consulted 2026-10-01)
 
 - Railway plans & resource pricing — https://docs.railway.com/reference/pricing/plans

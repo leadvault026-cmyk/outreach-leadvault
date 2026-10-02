@@ -60,11 +60,18 @@ export async function signInAction(_prev: FormState, formData: FormData): Promis
   if (error || !data.user) {
     // One generic message: never reveal whether an account exists.
     const rateLimited = error?.status === 429;
+    // A server-side failure of the auth service (5xx, or no HTTP status at all, e.g. its
+    // database connection timed out) is not a wrong password and must not be reported as one.
+    const serviceUnavailable = Boolean(error) && (!error?.status || error.status >= 500);
+    if (serviceUnavailable)
+      logger.warn("auth.sign_in_unavailable", { status: error?.status ?? null });
     return {
       status: "error",
       message: rateLimited
         ? "Too many sign-in attempts. Please wait a few minutes and try again."
-        : "The email or password is incorrect.",
+        : serviceUnavailable
+          ? "Couldn't reach the server. Check your connection and try again."
+          : "The email or password is incorrect.",
     };
   }
 

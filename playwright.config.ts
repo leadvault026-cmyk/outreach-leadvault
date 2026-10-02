@@ -11,7 +11,10 @@ export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
   workers: 1,
-  retries: 0,
+  // One retry: the local Docker stack has been observed to stall database connections for
+  // 10+ seconds (Supabase Auth log: "dial tcp …:5432: i/o timeout"). Tests that only pass on retry
+  // are reported as "flaky" — never silently hidden.
+  retries: 1,
   timeout: 60_000,
   expect: { timeout: 15_000 },
   reporter: [["list"]],

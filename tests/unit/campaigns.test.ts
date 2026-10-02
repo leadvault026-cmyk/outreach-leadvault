@@ -196,3 +196,30 @@ describe("inbound classification", () => {
     expect(bounceClass(null)).toBe("unknown");
   });
 });
+
+describe("campaign input schemas", () => {
+  it("accept their own parsed output (validated in actions, re-parsed in services)", async () => {
+    const { stepsInputSchema, campaignSettingsSchema } =
+      await import("@/services/campaign-service");
+    const steps = stepsInputSchema.parse([
+      { subject: "Hello", body: "Hi", delayMinutes: 0 },
+      { subject: "", body: "Following up", delayMinutes: 60 },
+    ]);
+    expect(steps[1]!.subject).toBeNull();
+    expect(stepsInputSchema.parse(steps)).toEqual(steps);
+    const settings = {
+      name: "Test",
+      description: "",
+      audienceId: "01890000-0000-7000-8000-000000000001",
+      mailboxId: "01890000-0000-7000-8000-000000000002",
+      timezone: "UTC",
+      startMode: "launch",
+      anyTime: true,
+      sendDays: [],
+      windowStart: "08:00",
+      windowEnd: "17:00",
+    };
+    const once = campaignSettingsSchema.parse(settings);
+    expect(campaignSettingsSchema.parse(once)).toEqual(once);
+  });
+});
